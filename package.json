@@ -1,0 +1,12 @@
+{
+  "name": "alnuqta-media",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tinacms build"
+  },
+  "dependencies": {
+    "@tinacms/cli": "^1.5.0",
+    "tinacms": "^1.5.0"
+  }
+}
