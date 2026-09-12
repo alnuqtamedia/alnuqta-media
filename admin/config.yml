@@ -1,8 +1,7 @@
-
 backend:
   name: github
-  repo: alnuqtamedia/alnuqta-media
-  branch: main
+  repo: YOUR_GITHUB_USERNAME/YOUR_REPOSITORY_NAME # مثال: alnuqta/alnuqta-media
+  branch: main # أو master حسب اسم الفرع في حسابك
 
 media_folder: "uploads"
 public_folder: "/uploads"
@@ -14,10 +13,10 @@ collections:
     create: true
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
     fields:
-      - { label: "عنوان التعليق", name: "title", widget: "string" }
+      - { label: "عنوان التحقيق", name: "title", widget: "string" }
       - { label: "التاريخ", name: "date", widget: "datetime" }
-      - { label: "التصنيف", name: "category", widget: "select", options: ["وثائق ومستندات", "آراء وتحليلات", "تقارير خاصة"] }
+      - { label: "التصنيف", name: "category", widget: "select", options: ["تحقيق استقصائي", "فساد مالي", "سوق العمل", "أمن بيئي", "وثائق ومستندات"] }
       - { label: "الصورة الرئيسية / الغلاف", name: "image", widget: "image", required: false }
       - { label: "رابط فيديو (YouTube / Reel)", name: "video_url", widget: "string", required: false }
       - { label: "الملخص القصير", name: "summary", widget: "text" }
-      - { label: "نص المقال / التعليق بالكامل", name: "body", widget: "markdown" }
+      - { label: "نص المقال / التحقيق بالكامل", name: "body", widget: "markdown" }
