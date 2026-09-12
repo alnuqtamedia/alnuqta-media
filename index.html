@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>النقطة Media | منصة التحقيقات الصحفية الاستقصائية</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            DEFAULT: '#0A1A2F',
+                            card: '#122238',
+                            light: '#1B2E4B',
+                            dark: '#06101E'
+                        },
+                        brandRed: {
+                            DEFAULT: '#E31217',
+                            hover: '#C00F13'
+                        }
+                    },
+                    fontFamily: {
+                        cairo: ['Cairo', 'sans-serif'],
+                        tajawal: ['Tajawal', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        body {
+            font-family: 'Tajawal', sans-serif;
+            background-color: #06101E;
+            color: #ffffff;
+        }
+        .font-cairo {
+            font-family: 'Cairo', sans-serif;
+        }
+        /* Scrollbar styling */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0A1A2F;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1B2E4B;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #E31217;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-brandRed selection:text-white">
+
+    <!-- Top Security & Status Banner -->
+    <div class="bg-navy border-b border-navy-light/60 px-4 py-2 text-xs text-gray-300 flex justify-between items-center font-cairo">
+        <div class="flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>تشفير الاتصال وآلية حماية المصادر مفعلة (256-bit SSL)</span>
+        </div>
+        <div class="flex items-center gap-4 text-gray-400">
+            <a href="#whistleblower" onclick="navTo('whistleblower')" class="text-brandRed hover:underline flex items-center gap-1 font-bold">
+                <i data-lucide="shield-alert" class="w-3.5 h-3.5"></i> إرسال تسريب آمن
+            </a>
+            <span class="hidden sm:inline">|</span>
+            <span class="hidden sm:inline font-mono">@alnuqtamedia</span>
+        </div>
+    </div>
+
+    <!-- Main Header / Navigation -->
+    <header class="bg-navy/90 backdrop-blur-md sticky top-0 z-40 border-b border-navy-light/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+            
+            <!-- Logo -->
+            <div onclick="navTo('home')" class="cursor-pointer flex items-center gap-3 group">
+                <div class="w-11 h-11 rounded-full bg-brandRed flex items-center justify-center font-cairo font-black text-white text-2xl shadow-lg shadow-brandRed/30 group-hover:scale-105 transition duration-300">
+                    .
+                </div>
+                <div>
+                    <span class="font-cairo font-black text-2xl tracking-wide text-white block leading-none">النقطة <span class="text-brandRed">Media</span></span>
+                    <span class="text-[11px] text-gray-400 font-cairo font-semibold tracking-wider">نحقق • نكشف • نوصل</span>
+                </div>
+            </div>
+
+            <!-- Desktop Nav Links -->
+            <nav class="hidden md:flex items-center gap-8 font-cairo font-bold text-sm text-gray-300">
+                <button onclick="navTo('home')" id="nav-home" class="nav-item text-brandRed hover:text-white transition">الرئيسية</button>
+                <button onclick="navTo('investigations')" id="nav-investigations" class="nav-item hover:text-brandRed transition">التحقيقات الاستقصائية</button>
+                <button onclick="navTo('documents')" id="nav-documents" class="nav-item hover:text-brandRed transition">أرشيف الوثائق</button>
+                <button onclick="navTo('whistleblower')" id="nav-whistleblower" class="nav-item hover:text-brandRed transition flex items-center gap-1.5 text-brandRed font-extrabold bg-brandRed/10 px-3 py-1.5 rounded-lg border border-brandRed/30">
+                    <i data-lucide="lock" class="w-4 h-4"></i> صندوق التسريبات
+                </button>
+                <button onclick="navTo('about')" id="nav-about" class="nav-item hover:text-brandRed transition">عن المنصة</button>
+            </nav>
+
+            <!-- CTA Button & Mobile Toggle -->
+            <div class="flex items-center gap-3">
+                <button onclick="navTo('whistleblower')" class="hidden sm:flex bg-brandRed hover:bg-brandRed-hover text-white font-cairo font-bold text-xs px-4 py-2.5 rounded-lg shadow-lg shadow-brandRed/20 transition duration-200 items-center gap-2">
+                    <i data-lucide="send" class="w-4 h-4"></i> أرسل وثيقة / معلومة
+                </button>
+                <button onclick="toggleMobileMenu()" class="md:hidden text-gray-300 hover:text-white p-2">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mobile Menu Drawer -->
+        <div id="mobile-menu" class="hidden md:hidden bg-navy-card border-b border-navy-light p-4 space-y-3 font-cairo font-bold text-sm">
+            <button onclick="navTo('home')" class="block w-full text-right py-2 text-brandRed">الرئيسية</button>
+            <button onclick="navTo('investigations')" class="block w-full text-right py-2 hover:text-brandRed">التحقيقات الاستقصائية</button>
+            <button onclick="navTo('documents')" class="block w-full text-right py-2 hover:text-brandRed">أرشيف الوثائق</button>
+            <button onclick="navTo('whistleblower')" class="block w-full text-right py-2 text-brandRed font-extrabold">صندوق التسريبات الآمن</button>
+            <button onclick="navTo('about')" class="block w-full text-right py-2 hover:text-brandRed">عن المنصة</button>
+        </div>
+    </header>
+
+    <!-- PAGE SECTION 1: HOME PAGE -->
+    <main id="section-home" class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        
+        <!-- Hero Section: Lead Investigation -->
+        <section class="relative bg-navy-card border border-navy-light rounded-2xl overflow-hidden shadow-2xl">
+            <div class="grid grid-cols-1 lg:grid-cols-12 items-center">
+                <div class="lg:col-span-7 p-6 sm:p-10 space-y-4">
+                    <div class="inline-flex items-center gap-2 bg-brandRed text-white text-xs font-cairo font-black px-3 py-1 rounded-md shadow">
+                        <i data-lucide="flame" class="w-3.5 h-3.5"></i> التحقيق الرئيسي
+                    </div>
+                    <h1 class="font-cairo font-black text-2xl sm:text-4xl leading-tight text-white">
+                        الرصاصة الأخيرة: حين يُصبح "الانتحار" غطاءً للتصفية في تاريخ العراق
+                    </h1>
+                    <p class="font-tajawal text-gray-300 text-sm sm:text-base leading-relaxed">
+                        عشرات القضايا والوفيات الغامضة لكبار المسؤولين والضباط تُغلق بتقرير سري من سطر واحد. بين حادثة ميناء الفاو وعبد المحسن السعدون، نكشف بالحقائق والوثائق كيف تحول هذا النمط إلى أداة لإخفاء الجرائم.
+                    </p>
+
+                    <div class="flex flex-wrap items-center gap-4 pt-4 border-t border-navy-light/60">
+                        <button onclick="openInvestigationModal('lastBullet')" class="bg-brandRed hover:bg-brandRed-hover text-white font-cairo font-bold text-sm px-6 py-3 rounded-lg shadow-lg shadow-brandRed/20 flex items-center gap-2 transition duration-200">
+                            <span>اقرأ التحقيق كاملاً</span>
+                            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        </button>
+                        <span class="text-xs text-gray-400 font-cairo flex items-center gap-1">
+                            <i data-lucide="clock" class="w-3.5 h-3.5"></i> وقت القراءة: 8 دقائق
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Graphic/Visual Card Preview -->
+                <div class="lg:col-span-5 bg-gradient-to-br from-navy via-navy-light to-navy p-8 flex flex-col items-center justify-center border-t lg:border-t-0 lg:border-r border-navy-light min-h-[320px]">
+                    <div class="w-full bg-navy-dark border border-brandRed/40 rounded-xl p-6 shadow-2xl space-y-4 relative overflow-hidden">
+                        <div class="absolute -top-10 -right-10 w-28 h-28 bg-brandRed/10 rounded-full blur-2xl"></div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-brandRed font-cairo font-extrabold text-xs">ملف استقصائي خاص</span>
+                            <span class="text-gray-400 text-xs font-mono">#01_IRAQ</span>
+                        </div>
+                        <h3 class="font-cairo font-bold text-lg text-white">"هل الانتحار في العراق خيار للضحية.. أم الطلقة الأخيرة للجاني؟"</h3>
+                        <div class="space-y-2 text-xs text-gray-300">
+                            <div class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-brandRed"></i> تحليل 10 محطات تاريخية وأمنية مفصلة</div>
+                            <div class="flex items-center gap-2"><i data-lucide="check-circle-2" class="w-4 h-4 text-brandRed"></i> شهادات وأدلة فنية متقاطعة</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Latest Investigations Grid -->
+        <section class="space-y-6">
+            <div class="flex items-center justify-between border-b border-navy-light pb-4">
+                <div>
+                    <h2 class="font-cairo font-black text-xl text-white flex items-center gap-2">
+                        <i data-lucide="newspaper" class="w-5 h-5 text-brandRed"></i> أحدث التحقيقات الاستقصائية
+                    </h2>
+                    <p class="text-xs text-gray-400 font-tajawal mt-1">تغطيات حصرية وتقارير معمقة تعتمد على البيانات والمستندات</p>
+                </div>
+                <button onclick="navTo('investigations')" class="text-xs font-cairo font-bold text-brandRed hover:underline flex items-center gap-1">
+                    عرض جميع التحقيقات <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                
+                <!-- Card 1 -->
+                <article class="bg-navy-card border border-navy-light hover:border-brandRed/50 rounded-xl p-5 flex flex-col justify-between transition duration-300 group shadow-lg">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="bg-brandRed/20 text-brandRed font-cairo font-bold px-2.5 py-0.5 rounded border border-brandRed/30">سوق العمل والتعليم</span>
+                            <span class="text-gray-400 font-mono">12 سبتمبر 2026</span>
+                        </div>
+                        <h3 class="font-cairo font-bold text-base text-white group-hover:text-brandRed transition">
+                            شهادة على الرصيف: الانفجار الأكاديمي وعجز التعيين الحكومي
+                        </h3>
+                        <p class="text-xs text-gray-300 font-tajawal line-clamp-3 leading-relaxed">
+                            أكثر من 150 ألف خريج يتدفقون سنوياً نحو سوق عمل معطل. بين صراخ الخريجين وتنصل الكليات من المسؤولية، أين تكمن الأزمة الهيكلية؟
+                        </p>
+                    </div>
+                    <div class="pt-4 mt-4 border-t border-navy-light/60 flex items-center justify-between">
+                        <button onclick="openInvestigationModal('pavement')" class="text-xs font-cairo font-bold text-white group-hover:text-brandRed flex items-center gap-1">
+                            قراءة التحقيق <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <span class="text-[11px] text-gray-400 font-cairo">6 سلايدات وتحليلات</span>
+                    </div>
+                </article>
+
+                <!-- Card 2 -->
+                <article class="bg-navy-card border border-navy-light hover:border-brandRed/50 rounded-xl p-5 flex flex-col justify-between transition duration-300 group shadow-lg">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="bg-brandRed/20 text-brandRed font-cairo font-bold px-2.5 py-0.5 rounded border border-brandRed/30">الفساد المالي</span>
+                            <span class="text-gray-400 font-mono">أغسطس 2026</span>
+                        </div>
+                        <h3 class="font-cairo font-bold text-base text-white group-hover:text-brandRed transition">
+                            شركات الوهم: كيف تُهرب الأموال عبر العقود التشغيلية؟
+                        </h3>
+                        <p class="text-xs text-gray-300 font-tajawal line-clamp-3 leading-relaxed">
+                            تحقيق استقصائي يكشف خفايا إرساء المناقصات على شركات وهمية مسجلة بأسماء واجهة، وتتبع الموازنات الضائعة في قطاع الطاقة.
+                        </p>
+                    </div>
+                    <div class="pt-4 mt-4 border-t border-navy-light/60 flex items-center justify-between">
+                        <button onclick="alert('سيتوفر هذا التحقيق قريباً ضمن الأرشيف الكامل.')" class="text-xs font-cairo font-bold text-white group-hover:text-brandRed flex items-center gap-1">
+                            قراءة التحقيق <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <span class="text-[11px] text-gray-400 font-cairo">تحقيق مدعوم بالوثائق</span>
+                    </div>
+                </article>
+
+                <!-- Card 3 -->
+                <article class="bg-navy-card border border-navy-light hover:border-brandRed/50 rounded-xl p-5 flex flex-col justify-between transition duration-300 group shadow-lg">
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between text-xs">
+                            <span class="bg-brandRed/20 text-brandRed font-cairo font-bold px-2.5 py-0.5 rounded border border-brandRed/30">الأمن البيئي</span>
+                            <span class="text-gray-400 font-mono">يوليو 2026</span>
+                        </div>
+                        <h3 class="font-cairo font-bold text-base text-white group-hover:text-brandRed transition">
+                            جفاف الأهوار: بين التغير المناخي والصفقات الحدودية
+                        </h3>
+                        <p class="text-xs text-gray-300 font-tajawal line-clamp-3 leading-relaxed">
+                            رصد ميداني وتقارير بالأقمار الصناعية تحلل انخفاض منسوب المياه وتأثير شبكات السدود الإقليمية على السكان المحليين.
+                        </p>
+                    </div>
+                    <div class="pt-4 mt-4 border-t border-navy-light/60 flex items-center justify-between">
+                        <button onclick="alert('سيتوفر هذا التحقيق قريباً ضمن الأرشيف الكامل.')" class="text-xs font-cairo font-bold text-white group-hover:text-brandRed flex items-center gap-1">
+                            قراءة التحقيق <i data-lucide="arrow-left" class="w-3.5 h-3.5"></i>
+                        </button>
+                        <span class="text-[11px] text-gray-400 font-cairo">صور وخرائط تفاعلية</span>
+                    </div>
+                </article>
+
+            </div>
+        </section>
+
+        <!-- Whistleblower Banner Callout -->
+        <section class="bg-gradient-to-r from-navy via-navy-card to-navy border border-brandRed/40 rounded-2xl p-8 text-center space-y-4 shadow-xl relative overflow-hidden">
+            <div class="w-12 h-12 bg-brandRed/20 border border-brandRed text-brandRed rounded-full flex items-center justify-center mx-auto">
+                <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <h2 class="font-cairo font-black text-2xl text-white">هل تملك وثيقة أو معلومة تمس المال العام أو العدالة؟</h2>
+            <p class="font-tajawal text-gray-300 text-sm max-w-2xl mx-auto leading-relaxed">
+                نلتزم في منصة **النقطة Media** بحماية المصادر والشهود بأعلى المعايير الأمنية والتشفير البرمجي. يمكنك إرسال الوثائق والتسريبات دون الحاجة للكشف عن هويتك.
+            </p>
+            <div class="pt-2">
+                <button onclick="navTo('whistleblower')" class="bg-brandRed hover:bg-brandRed-hover text-white font-cairo font-bold text-sm px-8 py-3 rounded-xl shadow-lg shadow-brandRed/30 inline-flex items-center gap-2 transition duration-200">
+                    <i data-lucide="lock" class="w-4 h-4"></i> الانتقال إلى صندوق التسريبات المشفر
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PAGE SECTION 2: INVESTIGATIONS LIST PAGE -->
+    <main id="section-investigations" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div class="border-b border-navy-light pb-4">
+            <h1 class="font-cairo font-black text-2xl text-white flex items-center gap-2">
+                <i data-lucide="file-text" class="w-6 h-6 text-brandRed"></i> أرشيف التحقيقات الاستقصائية
+            </h1>
+            <p class="text-xs text-gray-400 font-tajawal mt-1">جميع التحقيقات المعمقة والمفتوحة للنشر والتحليل</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Full Investigation Item 1 -->
+            <div class="bg-navy-card border border-navy-light rounded-xl p-6 space-y-4 flex flex-col justify-between">
+                <div>
+                    <span class="bg-brandRed text-white text-[10px] font-cairo font-black px-2.5 py-1 rounded">ملف استقصائي #01</span>
+                    <h2 class="font-cairo font-bold text-xl text-white mt-3">الرصاصة الأخيرة: حين يُصبح "الانتحار" غطاءً للتصفية في تاريخ العراق</h2>
+                    <p class="text-xs text-gray-300 font-tajawal mt-2 leading-relaxed">
+                        دراسة استقصائية تاريخية وأمنية تغطي قضايا التصفيات الغامضة من عبد المحسن السعدون عام 1929 إلى حادثة مدير شركة دايو في ميناء الفاو.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-navy-light flex items-center justify-between">
+                    <span class="text-xs text-gray-400 font-mono">10 سلايدات ومحاور</span>
+                    <button onclick="openInvestigationModal('lastBullet')" class="bg-brandRed hover:bg-brandRed-hover text-white font-cairo font-bold text-xs px-4 py-2 rounded-lg transition">قراءة التحقيق</button>
+                </div>
+            </div>
+
+            <!-- Full Investigation Item 2 -->
+            <div class="bg-navy-card border border-navy-light rounded-xl p-6 space-y-4 flex flex-col justify-between">
+                <div>
+                    <span class="bg-brandRed text-white text-[10px] font-cairo font-black px-2.5 py-1 rounded">ملف استقصائي #02</span>
+                    <h2 class="font-cairo font-bold text-xl text-white mt-3">شهادة على الرصيف: الانفجار الأكاديمي وعجز التعيين</h2>
+                    <p class="text-xs text-gray-300 font-tajawal mt-2 leading-relaxed">
+                        تحقيق بالأرقام والإحصائيات يحلل اتساع الفجوة بين مخرجات الجامعات الحكومية والأهلية ومتطلبات سوق العمل العراقي.
+                    </p>
+                </div>
+                <div class="pt-4 border-t border-navy-light flex items-center justify-between">
+                    <span class="text-xs text-gray-400 font-mono">6 سلايدات وإحصاءات</span>
+                    <button onclick="openInvestigationModal('pavement')" class="bg-brandRed hover:bg-brandRed-hover text-white font-cairo font-bold text-xs px-4 py-2 rounded-lg transition">قراءة التحقيق</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- PAGE SECTION 3: DOCUMENTS ARCHIVE PAGE -->
+    <main id="section-documents" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div class="border-b border-navy-light pb-4">
+            <h1 class="font-cairo font-black text-2xl text-white flex items-center gap-2">
+                <i data-lucide="folder-archive" class="w-6 h-6 text-brandRed"></i> أرشيف الوثائق والمستندات السرية
+            </h1>
+            <p class="text-xs text-gray-400 font-tajawal mt-1">مكتبة مفتوحة للوثائق الرسمية المعتمدة في التحقيقات</p>
+        </div>
+
+        <div class="bg-navy-card border border-navy-light rounded-xl p-6 space-y-4">
+            <div class="flex items-center justify-between border-b border-navy-light/60 pb-3 text-xs font-cairo text-gray-400">
+                <span>اسم الوثيقة / المستند</span>
+                <span>تاريخ الأرشفة</span>
+                <span>الحالة</span>
+            </div>
+            
+            <div class="space-y-3 font-tajawal text-xs">
+                <div class="flex items-center justify-between bg-navy/60 p-3 rounded-lg border border-navy-light/40">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="file-check" class="w-5 h-5 text-brandRed"></i>
+                        <div>
+                            <p class="font-bold text-white">تقرير لجنة تحقيق حادثة ميناء الفاو (مقتضب)</p>
+                            <p class="text-[11px] text-gray-400">مرتبط بتحقيق الرصاصة الأخيرة</p>
+                        </div>
+                    </div>
+                    <span class="text-gray-400 font-mono">2020</span>
+                    <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-cairo px-2 py-0.5 rounded">مفحوص وموثق</span>
+                </div>
+
+                <div class="flex items-center justify-between bg-navy/60 p-3 rounded-lg border border-navy-light/40">
+                    <div class="flex items-center gap-3">
+                        <i data-lucide="file-check" class="w-5 h-5 text-brandRed"></i>
+                        <div>
+                            <p class="font-bold text-white">بيانات خريجي الكليات والأقسام المستحدثة (2015-2025)</p>
+                            <p class="text-[11px] text-gray-400">مرتبط بتحقيق شهادة على الرصيف</p>
+                        </div>
+                    </div>
+                    <span class="text-gray-400 font-mono">2025</span>
+                    <span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-cairo px-2 py-0.5 rounded">مفحوص وموثق</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- PAGE SECTION 4: WHISTLEBLOWER TIP LINE -->
+    <main id="section-whistleblower" class="hidden flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div class="border-b border-navy-light pb-4 text-center">
+            <div class="w-12 h-12 bg-brandRed/20 border border-brandRed text-brandRed rounded-full flex items-center justify-center mx-auto mb-3">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+            </div>
+            <h1 class="font-cairo font-black text-2xl text-white">صندوق التسريبات الآمن والمعلومات الحساسة</h1>
+            <p class="text-xs text-gray-400 font-tajawal mt-1 max-w-lg mx-auto">
+                معلوماتك وتواصلك محمي بالكامل. لا نقوم بتسجيل عنوان الـ IP الخاص بك ولا نطلب معلومات شخصية.
+            </p>
+        </div>
+
+        <form name="whistleblower-form" data-netlify="true" method="POST" onsubmit="handleTipSubmit(event)" class="bg-navy-card border border-navy-light rounded-xl p-6 sm:p-8 space-y-6">
+            <input type="hidden" name="form-name" value="whistleblower-form" />
+            <div>
+                <label class="block text-xs font-cairo font-bold text-gray-300 mb-2">موضوع التسريب / القضية:</label>
+                <input type="text" name="subject" required placeholder="مثال: عقود وهمية في مشروع معين..." class="w-full bg-navy border border-navy-light rounded-lg p-3 text-xs text-white focus:outline-none focus:border-brandRed font-tajawal">
+            </div>
+
+            <div>
+                <label class="block text-xs font-cairo font-bold text-gray-300 mb-2">تفاصيل الوثيقة أو التفاصيل والمعلومات:</label>
+                <textarea name="details" rows="5" required placeholder="اكتب هنا التناقضات، التواريخ، أو المعلومات التفصيلية للحادثة..." class="w-full bg-navy border border-navy-light rounded-lg p-3 text-xs text-white focus:outline-none focus:border-brandRed font-tajawal resize-none"></textarea>
+            </div>
+
+            <div>
+                <label class="block text-xs font-cairo font-bold text-gray-300 mb-2">مرفق الوثيقة أو الصور (إن وجدت):</label>
+                <div class="border-2 border-dashed border-navy-light rounded-lg p-6 text-center cursor-pointer hover:border-brandRed transition">
+                    <input type="file" name="attachment" class="hidden" id="file-upload">
+                    <label for="file-upload" class="cursor-pointer">
+                        <i data-lucide="upload-cloud" class="w-8 h-8 text-brandRed mx-auto mb-2"></i>
+                        <p class="text-xs text-gray-300 font-cairo font-bold">اضغط هنا لرفع الوثيقة أو الملف</p>
+                        <p class="text-[10px] text-gray-500 font-tajawal mt-1">تشفير تلقائي عند الرفع (PDF, PNG, JPG, ZIP)</p>
+                    </label>
+                </div>
+            </div>
+
+            <div class="bg-navy p-4 rounded-lg border border-navy-light text-xs text-gray-400 space-y-1">
+                <p class="font-cairo font-bold text-brandRed flex items-center gap-1"><i data-lucide="lock" class="w-3.5 h-3.5"></i> ضمان الحماية:</p>
+                <p class="font-tajawal">يتم تخزين الملفات على خوادم مشفرة لا يرتبط بها أي معرّف رقمي ينتهك خصوصيتك.</p>
+            </div>
+
+            <button type="submit" class="w-full py-3.5 bg-brandRed hover:bg-brandRed-hover text-white font-cairo font-bold text-sm rounded-lg shadow-lg shadow-brandRed/30 flex items-center justify-center gap-2 transition">
+                <i data-lucide="send" class="w-4 h-4"></i> إرسال التسريب المشفر الآن
+            </button>
+        </form>
+    </main>
+
+    <!-- PAGE SECTION 5: ABOUT PAGE -->
+    <main id="section-about" class="hidden flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <div class="border-b border-navy-light pb-4">
+            <h1 class="font-cairo font-black text-2xl text-white">عن منصة النقطة Media</h1>
+            <p class="text-xs text-gray-400 font-tajawal mt-1">صحافة استقصائية ورصد للحقائق في العراق والمنطقة</p>
+        </div>
+
+        <div class="bg-navy-card border border-navy-light rounded-xl p-8 space-y-6 text-sm font-tajawal text-gray-300 leading-relaxed">
+            <p>
+                **النقطة Media** هي منصة إعلامية استقصائية مستقلة تسعى لكشف الحقائق، التحقيق في قضايا المال العام، وتفكيك روايات النفوذ المعقدة عبر أدوات الصحافة الحديثة القائمة على البيانات، الوثائق، والرصد الميداني.
+            </p>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-navy-light text-center font-cairo">
+                <div class="bg-navy p-4 rounded-lg border border-navy-light">
+                    <h3 class="font-black text-brandRed text-lg">نحقق</h3>
+                    <p class="text-xs text-gray-400 mt-1">البحث خلف الكواليس وتتبع الخيوط المغلقة</p>
+                </div>
+                <div class="bg-navy p-4 rounded-lg border border-navy-light">
+                    <h3 class="font-black text-brandRed text-lg">نكشف</h3>
+                    <p class="text-xs text-gray-400 mt-1">عرض الوثائق والأرقام دون تحيز</p>
+                </div>
+                <div class="bg-navy p-4 rounded-lg border border-navy-light">
+                    <h3 class="font-black text-brandRed text-lg">نوصل</h3>
+                    <p class="text-xs text-gray-400 mt-1">تقديم المعرفة والحقيقة للشارع والمجتمع</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Investigation Reader Modal -->
+    <div id="investigation-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-navy-card border border-navy-light rounded-2xl max-w-3xl w-full p-6 sm:p-8 space-y-6 max-h-[90vh] overflow-y-auto relative text-right">
+            <button onclick="closeInvestigationModal()" class="absolute top-4 left-4 text-gray-400 hover:text-white p-2">
+                <i data-lucide="x" class="w-6 h-6"></i>
+            </button>
+
+            <div id="modal-content" class="space-y-6">
+                <!-- Content dynamically populated via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-navy border-t border-navy-light/60 py-8 text-xs font-cairo text-gray-400">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-full bg-brandRed flex items-center justify-center font-cairo font-black text-white text-lg">.</div>
+                <span class="font-black text-white text-base">النقطة <span class="text-brandRed">Media</span></span>
+            </div>
+            <p class="text-gray-400 text-center font-tajawal">جميع الحقوق محفوظة منصة النقطة Media © 2026</p>
+            <div class="flex items-center gap-4 text-gray-400 font-mono">
+                <span class="hover:text-brandRed cursor-pointer">@alnuqtamedia</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Interactive Logic Script -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Modal & Navigation Logic
+        function navTo(sectionId) {
+            const sections = ['home', 'investigations', 'documents', 'whistleblower', 'about'];
+            sections.forEach(sec => {
+                const el = document.getElementById(`section-${sec}`);
+                if (el) el.classList.add('hidden');
+            });
+
+            const target = document.getElementById(`section-${sectionId}`);
+            if (target) target.classList.remove('hidden');
+
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu');
+            menu.classList.toggle('hidden');
+        }
+
+        function handleTipSubmit(e) {
+            // Netlify handles forms naturally if posted, but alert helps user experience
+            alert('تم استلام معلوماتك وتشفيرها بنجاح. شكراً لمساهمتك في كشف الحقيقة مع منصة النقطة Media.');
+        }
+
+        function openInvestigationModal(investigationKey) {
+            const modal = document.getElementById('investigation-modal');
+            const content = document.getElementById('modal-content');
+
+            if (investigationKey === 'lastBullet') {
+                content.innerHTML = `
+                    <div class="space-y-4">
+                        <span class="bg-brandRed text-white text-xs font-cairo font-black px-3 py-1 rounded">تحقيق استقصائي ممتد</span>
+                        <h2 class="font-cairo font-black text-2xl text-white leading-snug">الرصاصة الأخيرة: حين يُصبح "الانتحار" غطاءً للتصفية في تاريخ العراق</h2>
+                        <div class="border-b border-navy-light pb-4 text-xs text-gray-400 flex items-center justify-between font-mono">
+                            <span>النقطة Media • قسم التحقيقات</span>
+                            <span>سبتمبر 2026</span>
+                        </div>
+                        <div class="space-y-4 text-sm font-tajawal text-gray-300 leading-relaxed">
+                            <p class="font-bold text-white">المدخل والظاهرة:</p>
+                            <p>في تاريخ العراق الحديث، كثيراً ما أُغلقت القضايا الكبرى بطلقة واحدة وتقرير طبي مفاده "انتحار الضحية". تتكرر هذه الصيغة كلما تقاطعت المصالح السياسية أو المالية المعقدة مع شخصيات تملك مفاتيح سرية.</p>
+                            
+                            <p class="font-bold text-white">محطات تاريخية متقاطعة:</p>
+                            <ul class="list-disc list-inside space-y-2 text-xs">
+                                stroke-left <strong class="text-white">عبد المحسن السعدون (1929):</strong> رئيس الوزراء الأسبق الذي هزت حادثة وفاته العهد الملكي مع تضارب الروايات حول رسالة الانتحار والمصالح البريطانية.
+                                <br><strong class="text-white">حادثة ميناء الفاو (2020):</strong> العثور على مدير شركة "دايو" المنفذة للمشروع مشنوقاً في مقر عمله، في توقيت حساس سبق توقيع العقود النهائية، مما أثار شكوكاً واسعة لم تنته حتى اليوم.
+                            </ul>
+
+                            <div class="bg-navy p-4 rounded-lg border border-brandRed/30 my-4 text-xs">
+                                <p class="font-cairo font-bold text-brandRed mb-1">نتيجة التحقيق:</p>
+                                <p>غياب التحقيق المستقل وتغليب الرواية الرسمية السريعة يحول الانتحار من خيار شخصي مجرد إلى أداة تصفية مريحة لإغلاق الملفات وتغييب الشهود.</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else if (investigationKey === 'pavement') {
+                content.innerHTML = `
+                    <div class="space-y-4">
+                        <span class="bg-brandRed text-white text-xs font-cairo font-black px-3 py-1 rounded">سوق العمل والتعليم</span>
+                        <h2 class="font-cairo font-black text-2xl text-white leading-snug">شهادة على الرصيف: الانفجار الأكاديمي وعجز التعيين الحكومي</h2>
+                        <div class="border-b border-navy-light pb-4 text-xs text-gray-400 flex items-center justify-between font-mono">
+                            <span>النقطة Media • وحدة تحليل البيانات</span>
+                            <span>سبتمبر 2026</span>
+                        </div>
+                        <div class="space-y-4 text-sm font-tajawal text-gray-300 leading-relaxed">
+                            <p>يكشف هذا التحقيق الفجوة المتزايدة بين عدد الخريجين السنوي الذي يتجاوز 150 ألف خريج، وبين قدرة القطاع الحكومي على الاستيعاب والتي تراجعت لسنوات بسبب تضخم الموازنة التشغيلية.</p>
+                            <p class="text-xs bg-navy p-3 rounded border border-navy-light">
+                                <strong class="text-brandRed">المشكلة الهيكلية:</strong> استحداث عشرات الكليات الأهلية دون ربطها بحاجة سوق العمل الحقيقي أو دعم القطاع الخاص للاستيعاب.
+                            </p>
+                        </div>
+                    </div>
+                `;
+            }
+
+            modal.classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeInvestigationModal() {
+            document.getElementById('investigation-modal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
