@@ -2,6 +2,8 @@ backend:
   name: github
   repo: alnuqtamedia/alnuqta-media
   branch: main
+  base_url: https://decap-bridge.netlify.app
+  auth_endpoint: /auth
 
 media_folder: "uploads"
 public_folder: "/uploads"
