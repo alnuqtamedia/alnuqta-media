@@ -3,11 +3,43 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>لوحة تحكم منصة النقطة Media</title>
-
+  <title>لوحة تحكم منصة النقطة</title>
+  <link href="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.css" rel="stylesheet" />
 </head>
 <body>
-  <!-- Decap CMS Script -->
   <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+  <script>
+    CMS.init({
+      config: {
+        backend: {
+          name: 'github',
+          repo: 'alnuqtamedia/alnuqta-media',
+          branch: 'main',
+          base_url: 'https://decap-bridge.netlify.app',
+          auth_endpoint: '/auth'
+        },
+        media_folder: 'uploads',
+        public_folder: '/uploads',
+        collections: [
+          {
+            name: 'investigations',
+            label: 'التحقيقات والمقالات',
+            folder: 'content/investigations',
+            create: true,
+            slug: '{{year}}-{{month}}-{{day}}-{{slug}}',
+            fields: [
+              { label: 'عنوان التحقيق', name: 'title', widget: 'string' },
+              { label: 'التاريخ', name: 'date', widget: 'datetime' },
+              { label: 'التصنيف', name: 'category', widget: 'select', options: ['تحقيق استقصائي', 'فساد مالي', 'سوق العمل', 'أمن بيئي', 'وثائق ومستندات'] },
+              { label: 'الصورة الرئيسية / الغلاف', name: 'image', widget: 'image', required: false },
+              { label: 'رابط فيديو (YouTube / Reel)', name: 'video_url', widget: 'string', required: false },
+              { label: 'الملخص القصير', name: 'summary', widget: 'text' },
+              { label: 'نص المقال / التحقيق بالكامل', name: 'body', widget: 'markdown' }
+            ]
+          }
+        ]
+      }
+    });
+  </script>
 </body>
 </html>
