@@ -1,57 +1,60 @@
 (() => {
+  const routes = {
+    home: 'index.html',
+    newsroom: 'newsroom.html',
+    investigations: 'investigations.html',
+    documents: 'documents.html',
+    whistleblower: 'submit.html',
+    about: 'about.html'
+  };
   const labels = {
-    home: 'الرئيسية',
     newsroom: 'غرفة الأخبار',
     investigations: 'التحقيقات الاستقصائية',
     documents: 'أرشيف الوثائق',
-    about: 'عن المنصة',
-    whistleblower: 'إرسال معلومة'
+    whistleblower: 'إرسال معلومة',
+    about: 'عن المنصة'
   };
 
-  const go = (target) => {
-    if (target === 'newsroom') {
-      window.location.href = 'newsroom.html';
-      return;
-    }
-    if (typeof window.navTo === 'function') window.navTo(target);
+  window.navTo = (target) => {
+    const route = routes[target] || routes.home;
+    window.location.href = route;
   };
 
-  const addDesktopNewsroom = () => {
-    const nav = document.querySelector('header nav');
-    if (!nav || nav.querySelector('[data-homepage-newsroom]')) return;
-    const before = document.getElementById('nav-investigations');
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.id = 'nav-newsroom';
-    button.dataset.homepageNewsroom = 'true';
-    button.className = 'nav-item hover:text-brandRed transition';
-    button.textContent = labels.newsroom;
-    button.addEventListener('click', () => go('newsroom'));
-    nav.insertBefore(button, before || nav.firstChild);
-  };
-
-  const addMobileNewsroom = () => {
-    const menu = document.getElementById('mobile-menu');
-    if (!menu || menu.querySelector('[data-homepage-newsroom]')) return;
-    const button = document.createElement('button');
-    button.type = 'button';
-    button.dataset.homepageNewsroom = 'true';
-    button.className = 'block w-full text-right py-2 hover:text-brandRed';
-    button.textContent = labels.newsroom;
-    button.addEventListener('click', () => go('newsroom'));
-    const investigations = [...menu.querySelectorAll('button')].find((el) => el.textContent.includes(labels.investigations));
-    menu.insertBefore(button, investigations || menu.firstChild);
+  const addLink = (container, target, before) => {
+    if (!container || container.querySelector(`[data-homepage-route="${target}"]`)) return;
+    const link = document.createElement('a');
+    link.href = routes[target];
+    link.dataset.homepageRoute = target;
+    link.className = 'nav-item hover:text-brandRed transition font-cairo font-bold text-sm';
+    link.textContent = labels[target];
+    if (before) container.insertBefore(link, before);
+    else container.appendChild(link);
   };
 
   const repairNavigation = () => {
-    addDesktopNewsroom();
-    addMobileNewsroom();
-    document.querySelectorAll('button.nav-item').forEach((button) => {
-      const text = button.textContent.trim();
-      const match = Object.entries(labels).find(([, label]) => text.includes(label));
-      if (!match) return;
-      button.type = 'button';
-      button.addEventListener('click', () => go(match[0]), { once: true });
+    const nav = document.querySelector('header nav');
+    const before = document.getElementById('nav-investigations');
+    addLink(nav, 'newsroom', before);
+
+    const mobile = document.getElementById('mobile-menu');
+    if (mobile) {
+      const firstInvestigations = [...mobile.querySelectorAll('button')].find((el) => el.textContent.includes(labels.investigations));
+      if (!mobile.querySelector('[data-homepage-route="newsroom"]')) {
+        const link = document.createElement('a');
+        link.href = routes.newsroom;
+        link.dataset.homepageRoute = 'newsroom';
+        link.className = 'block w-full text-right py-2 hover:text-brandRed';
+        link.textContent = labels.newsroom;
+        mobile.insertBefore(link, firstInvestigations || mobile.firstChild);
+      }
+    }
+
+    document.querySelectorAll('[onclick*="navTo("]').forEach((el) => {
+      const match = el.getAttribute('onclick').match(/navTo\(['"]([^'"]+)['"]\)/);
+      if (!match || !routes[match[1]]) return;
+      el.removeAttribute('onclick');
+      el.addEventListener('click', () => window.location.href = routes[match[1]]);
+      if (el.tagName === 'BUTTON') el.type = 'button';
     });
   };
 
