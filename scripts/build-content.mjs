@@ -66,7 +66,7 @@ async function readCollection(dir) {
     for (const file of files) {
       const source = await readFile(path.join(dir, file), "utf8");
       const { data, body } = parseFrontmatter(source);
-      if (!Object.keys(data).length) continue;
+      if (!data.title || !data.status) continue;
       items.push({ slug: stripExtension(file), ...data, body });
     }
     return items;
@@ -77,7 +77,8 @@ async function readCollection(dir) {
 }
 
 const posts = await readCollection(postsDir);
-const payload = `${JSON.stringify({ generatedAt: new Date().toISOString(), posts }, null, 2)}\n`;
+// Keep committed build output deterministic so CI can verify it without a timestamp diff.
+const payload = `${JSON.stringify({ generatedAt: null, posts }, null, 2)}\n`;
 for (const outputDir of outputDirs) {
   await mkdir(outputDir, { recursive: true });
   await writeFile(path.join(outputDir, "posts.json"), payload, "utf8");
