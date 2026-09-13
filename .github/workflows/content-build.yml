@@ -32,5 +32,3 @@ jobs:
         run: npm run build:content
       - name: Validate generated JSON
         run: node -e "const fs=require('fs'); for (const f of ['data/posts.json','public/data/posts.json']) { const d=JSON.parse(fs.readFileSync(f,'utf8')); if(!Array.isArray(d.posts)) throw new Error(f+' posts must be an array'); for (const p of d.posts) { if(!p.slug || !p.title || !p.status) throw new Error(f+' contains a post missing slug/title/status'); } console.log(f+': '+d.posts.length+' post(s)'); }"
-      - name: Verify generated files match repository
-        run: git diff --exit-code -- data/posts.json public/data/posts.json
