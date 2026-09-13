@@ -6,7 +6,14 @@ on:
     paths:
       - "content/posts/**"
       - "scripts/build-content.mjs"
+      - "scripts/validate-site.mjs"
       - "package.json"
+      - "index.html"
+      - "newsroom.html"
+      - "admin/**"
+      - "data/posts.json"
+      - "public/data/posts.json"
+      - "tina/config.ts"
       - ".github/workflows/content-build.yml"
   push:
     branches:
@@ -15,7 +22,14 @@ on:
     paths:
       - "content/posts/**"
       - "scripts/build-content.mjs"
+      - "scripts/validate-site.mjs"
       - "package.json"
+      - "index.html"
+      - "newsroom.html"
+      - "admin/**"
+      - "data/posts.json"
+      - "public/data/posts.json"
+      - "tina/config.ts"
       - ".github/workflows/content-build.yml"
 
 permissions:
@@ -59,3 +73,6 @@ jobs:
 
       - name: Verify generated files are identical
         run: cmp --silent data/posts.json public/data/posts.json
+
+      - name: Validate site surfaces and security wording
+        run: npm run validate:site
