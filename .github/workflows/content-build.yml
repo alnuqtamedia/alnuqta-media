@@ -6,12 +6,17 @@ on:
       - "content/posts/**"
       - "scripts/build-content.mjs"
       - "package.json"
+      - ".github/workflows/content-build.yml"
   push:
-    branches: [main]
+    branches: [main, feature/newsroom-cms-schema]
     paths:
       - "content/posts/**"
       - "scripts/build-content.mjs"
       - "package.json"
+      - ".github/workflows/content-build.yml"
+
+permissions:
+  contents: read
 
 jobs:
   build-content:
@@ -25,5 +30,7 @@ jobs:
           node-version: 20
       - name: Build newsroom index
         run: npm run build:content
-      - name: Check generated JSON
-        run: node -e "const fs=require('fs'); for (const f of ['data/posts.json','public/data/posts.json']) { const d=JSON.parse(fs.readFileSync(f,'utf8')); if (!Array.isArray(d.posts)) throw new Error(f+' has no posts array'); }"
+      - name: Validate generated JSON
+        run: node -e "const fs=require('fs'); for (const f of ['data/posts.json','public/data/posts.json']) { const d=JSON.parse(fs.readFileSync(f,'utf8')); if(!Array.isArray(d.posts)) throw new Error(f+' posts must be an array'); for (const p of d.posts) { if(!p.slug || !p.title || !p.status) throw new Error(f+' contains a post missing slug/title/status'); } console.log(f+': '+d.posts.length+' post(s)'); }"
+      - name: Verify generated files match repository
+        run: git diff --exit-code -- data/posts.json public/data/posts.json
