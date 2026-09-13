@@ -2,7 +2,8 @@ backend:
   name: github
   repo: alnuqtamedia/alnuqta-media
   branch: main
-  use_graphql: false
+  base_url: https://decap-bridge.vercel.app
+  auth_endpoint: /api/auth
 
 media_folder: "images"
 public_folder: "/images"
