@@ -1,6 +1,7 @@
 name: Validate newsroom content
 
 on:
+  workflow_dispatch:
   pull_request:
     paths:
       - "content/posts/**"
@@ -8,7 +9,9 @@ on:
       - "package.json"
       - ".github/workflows/content-build.yml"
   push:
-    branches: [main, feature/newsroom-cms-schema]
+    branches:
+      - main
+      - feature/newsroom-cms-schema
     paths:
       - "content/posts/**"
       - "scripts/build-content.mjs"
@@ -18,17 +21,40 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: newsroom-content-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-content:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - name: Build newsroom index
         run: npm run build:content
+
       - name: Validate generated JSON
-        run: node -e "const fs=require('fs'); for (const f of ['data/posts.json','public/data/posts.json']) { const d=JSON.parse(fs.readFileSync(f,'utf8')); if(!Array.isArray(d.posts)) throw new Error(f+' posts must be an array'); for (const p of d.posts) { if(!p.slug || !p.title || !p.status) throw new Error(f+' contains a post missing slug/title/status'); } console.log(f+': '+d.posts.length+' post(s)'); }"
+        run: |
+          node <<'NODE'
+          const fs = require('fs');
+          for (const file of ['data/posts.json', 'public/data/posts.json']) {
+            const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+            if (!Array.isArray(data.posts)) throw new Error(`${file}: posts must be an array`);
+            for (const post of data.posts) {
+              if (!post.slug || !post.title || !post.status) {
+                throw new Error(`${file}: post missing slug/title/status`);
+              }
+            }
+            console.log(`${file}: ${data.posts.length} post(s)`);
+          }
+          NODE
+
+      - name: Verify generated files are identical
+        run: cmp --silent data/posts.json public/data/posts.json
