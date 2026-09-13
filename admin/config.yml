@@ -22,11 +22,12 @@ collections:
     fields:
       - { label: "العنوان", name: "title", widget: "string" }
       - { label: "العنوان الفرعي", name: "subtitle", widget: "string", required: false }
-      - { label: "النوع الصحفي", name: "section", widget: "select", options: ["تحقيق استقصائي", "تقرير", "خبر", "تحليل", "مقابلة", "قصة إنسانية", "فيديو", "معرض صور"] }
-      - { label: "الحالة التحريرية", name: "status", widget: "select", default: "مسودة", options: ["مسودة", "قيد المراجعة", "جاهز للنشر", "منشور"] }
+      - { label: "النوع الصحفي", name: "section", widget: "select", options: [{label: "تحقيق استقصائي", value: "investigation"}, {label: "تقرير", value: "report"}, {label: "خبر", value: "news"}, {label: "تحليل", value: "analysis"}, {label: "مقابلة", value: "interview"}, {label: "قصة إنسانية", value: "human-story"}, {label: "فيديو", value: "video"}, {label: "معرض صور", value: "gallery"}] }
+      - { label: "الحالة التحريرية", name: "status", widget: "select", default: "draft", options: [{label: "مسودة", value: "draft"}, {label: "قيد المراجعة", value: "review"}, {label: "جاهز للنشر", value: "ready"}, {label: "منشور", value: "published"}] }
       - { label: "تاريخ النشر", name: "date", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ" }
       - { label: "الكاتب", name: "author", widget: "string", required: false }
       - { label: "المحرر", name: "editor", widget: "string", required: false }
+      - { label: "دور صاحب المادة", name: "author_role", widget: "select", required: false, options: [{label: "مالك المنصة", value: "owner"}, {label: "محرر", value: "editor"}, {label: "كاتب", value: "writer"}] }
       - { label: "الملخص", name: "excerpt", widget: "text", required: false }
       - { label: "الصورة البارزة", name: "image", widget: "image", required: false }
       - { label: "وقت القراءة بالدقائق", name: "reading_time", widget: "number", value_type: "int", min: 1, required: false }
