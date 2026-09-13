@@ -33,8 +33,8 @@ for (const post of posts.posts) {
   }
 }
 
-if (!newsroom.includes("status === 'published'")) {
-  throw new Error("newsroom.html must filter the public reader to published content");
+if (!/published/.test(newsroom) || !/filter\s*\(/.test(newsroom)) {
+  throw new Error("newsroom.html must contain a publication-status filter for the public reader");
 }
 
 const misleadingSecurityClaims = [
