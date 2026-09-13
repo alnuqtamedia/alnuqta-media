@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const postsDir = path.join(root, "content", "posts");
-const outputDir = path.join(root, "public", "data");
+const outputDirs = [path.join(root, "public", "data"), path.join(root, "data")];
 
 function parseScalar(value) {
   const trimmed = value.trim();
@@ -26,14 +26,12 @@ function parseFrontmatter(source) {
   let key = null;
   let list = null;
   let multiline = null;
-
   const finish = () => {
     if (list && key) data[key] = list;
     list = null;
     if (multiline && key) data[key] = multiline.join("\n").trim();
     multiline = null;
   };
-
   for (const line of lines) {
     if (multiline) {
       if (/^\s+/.test(line) || !line.trim()) { multiline.push(line.replace(/^\s{2}/, "")); continue; }
@@ -43,9 +41,7 @@ function parseFrontmatter(source) {
     if (item && key && list) { list.push(parseScalar(item[1])); continue; }
     const match = line.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
     if (!match) continue;
-    finish();
-    key = match[1];
-    const value = match[2];
+    finish(); key = match[1]; const value = match[2];
     if (value === "|") { multiline = []; continue; }
     if (!value) { list = []; continue; }
     data[key] = parseScalar(value);
@@ -74,6 +70,9 @@ async function readCollection(dir) {
 }
 
 const posts = await readCollection(postsDir);
-await mkdir(outputDir, { recursive: true });
-await writeFile(path.join(outputDir, "posts.json"), `${JSON.stringify({ generatedAt: new Date().toISOString(), posts }, null, 2)}\n`, "utf8");
-console.log(`Built ${posts.length} newsroom post(s) into public/data/posts.json`);
+const payload = `${JSON.stringify({ generatedAt: new Date().toISOString(), posts }, null, 2)}\n`;
+for (const outputDir of outputDirs) {
+  await mkdir(outputDir, { recursive: true });
+  await writeFile(path.join(outputDir, "posts.json"), payload, "utf8");
+}
+console.log(`Built ${posts.length} newsroom post(s) into data/posts.json and public/data/posts.json`);
