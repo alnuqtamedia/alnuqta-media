@@ -1,5 +1,8 @@
 {
   "name": "alnuqta-media",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "scripts": {
+    "build:content": "node scripts/build-content.mjs"
+  }
 }
