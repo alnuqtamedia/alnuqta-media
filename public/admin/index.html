@@ -4,11 +4,11 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>لوحة تحكم منصة النقطة</title>
-    <!-- ربط ملف الإعدادات صراحة لمنع الشاشة البيضاء -->
-    <link href="config.yml" type="text/yaml" rel="cms-config-url" />
+    <script src="https://unpkg.com/@staticcms/app@^2.0.0/dist/static-cms-app.js"></script>
   </head>
   <body>
-    <!-- سكريبت Decap CMS -->
-    <script src="https://unpkg.com/decap-cms@^3.0.0/dist/decap-cms.js"></script>
+    <script>
+      window.CMS.init();
+    </script>
   </body>
 </html>
