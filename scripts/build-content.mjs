@@ -9,9 +9,7 @@ const outputDir = path.join(root, "public", "data");
 function parseScalar(value) {
   const trimmed = value.trim();
   if (!trimmed) return "";
-  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) {
-    return trimmed.slice(1, -1);
-  }
+  if ((trimmed.startsWith('"') && trimmed.endsWith('"')) || (trimmed.startsWith("'") && trimmed.endsWith("'"))) return trimmed.slice(1, -1);
   if (trimmed === "true") return true;
   if (trimmed === "false") return false;
   if (/^-?\d+(\.\d+)?$/.test(trimmed)) return Number(trimmed);
@@ -22,42 +20,51 @@ function parseFrontmatter(source) {
   if (!source.startsWith("---")) return { data: {}, body: source };
   const end = source.indexOf("\n---", 3);
   if (end === -1) return { data: {}, body: source };
-
-  const frontmatter = source.slice(4, end).trim();
+  const lines = source.slice(4, end).split(/\r?\n/);
   const body = source.slice(end + 4).replace(/^\r?\n/, "");
   const data = {};
+  let key = null;
+  let list = null;
+  let multiline = null;
 
-  for (const line of frontmatter.split(/\r?\n/)) {
+  const finish = () => {
+    if (list && key) data[key] = list;
+    list = null;
+    if (multiline && key) data[key] = multiline.join("\n").trim();
+    multiline = null;
+  };
+
+  for (const line of lines) {
+    if (multiline) {
+      if (/^\s+/.test(line) || !line.trim()) { multiline.push(line.replace(/^\s{2}/, "")); continue; }
+      finish();
+    }
+    const item = line.match(/^\s*-\s+(.*)$/);
+    if (item && key && list) { list.push(parseScalar(item[1])); continue; }
     const match = line.match(/^([A-Za-z0-9_]+):\s*(.*)$/);
     if (!match) continue;
-    const [, key, value] = match;
+    finish();
+    key = match[1];
+    const value = match[2];
+    if (value === "|") { multiline = []; continue; }
+    if (!value) { list = []; continue; }
     data[key] = parseScalar(value);
   }
-
+  finish();
   return { data, body };
 }
 
-function stripExtension(name) {
-  return name.replace(/\.(md|mdx)$/i, "");
-}
+function stripExtension(name) { return name.replace(/\.(md|mdx)$/i, ""); }
 
 async function readCollection(dir) {
   try {
     const entries = await readdir(dir, { withFileTypes: true });
-    const files = entries
-      .filter((entry) => entry.isFile() && /\.(md|mdx)$/i.test(entry.name))
-      .map((entry) => entry.name)
-      .sort();
-
+    const files = entries.filter((entry) => entry.isFile() && /\.(md|mdx)$/i.test(entry.name)).map((entry) => entry.name).sort();
     const items = [];
     for (const file of files) {
       const source = await readFile(path.join(dir, file), "utf8");
       const { data, body } = parseFrontmatter(source);
-      items.push({
-        slug: stripExtension(file),
-        ...data,
-        body,
-      });
+      items.push({ slug: stripExtension(file), ...data, body });
     }
     return items;
   } catch (error) {
@@ -68,11 +75,5 @@ async function readCollection(dir) {
 
 const posts = await readCollection(postsDir);
 await mkdir(outputDir, { recursive: true });
-
-const payload = {
-  generatedAt: new Date().toISOString(),
-  posts,
-};
-
-await writeFile(path.join(outputDir, "posts.json"), `${JSON.stringify(payload, null, 2)}\n`, "utf8");
+await writeFile(path.join(outputDir, "posts.json"), `${JSON.stringify({ generatedAt: new Date().toISOString(), posts }, null, 2)}\n`, "utf8");
 console.log(`Built ${posts.length} newsroom post(s) into public/data/posts.json`);
