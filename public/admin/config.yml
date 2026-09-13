@@ -15,6 +15,4 @@ collections:
     fields:
       - { label: "العنوان", name: "title", widget: "string" }
       - { label: "تاريخ النشر", name: "date", widget: "datetime" }
-      - { label: "الكاتب / المحرر", name: "author", widget: "string" }
-      - { label: "الصورة الرئيسية / الميديا", name: "thumbnail", widget: "image", required: false }
-      - { label: "محتوى التقرير أو المقال", name: "body", widget: "markdown" }
+      - { label: "محتوى التقرير", name: "body", widget: "markdown" }
