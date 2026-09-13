@@ -4,17 +4,46 @@ backend:
   branch: main
   auth_type: implicit
 
+# Editorial workflow: draft -> review -> ready -> publish.
+# GitHub-backed authentication remains temporary until the real newsroom
+# identity service is introduced in phase two.
+publish_mode: editorial_workflow
 media_folder: "images"
 public_folder: "/images"
 
 collections:
   - name: "posts"
-    label: "الأخبار والتقارير"
+    label: "غرفة الأخبار"
+    label_singular: "مادة صحفية"
     folder: "posts"
     create: true
+    delete: false
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} — {{section}} — {{status}}"
+    sortable_fields: ["date", "title", "status"]
     fields:
       - { label: "العنوان", name: "title", widget: "string" }
-      - { label: "تاريخ النشر", name: "date", widget: "datetime" }
+      - { label: "العنوان الفرعي", name: "subtitle", widget: "string", required: false }
+      - { label: "النوع", name: "section", widget: "select", options: ["تحقيق استقصائي", "تقرير", "خبر", "تحليل", "مقابلة", "قصة إنسانية", "فيديو", "معرض صور"] }
+      - { label: "الحالة التحريرية", name: "status", widget: "select", default: "مسودة", options: ["مسودة", "قيد المراجعة", "جاهز للنشر", "منشور"] }
+      - { label: "تاريخ النشر", name: "date", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ" }
+      - { label: "الكاتب", name: "author", widget: "string", required: false }
+      - { label: "المحرر", name: "editor", widget: "string", required: false }
+      - { label: "الملخص", name: "excerpt", widget: "text", required: false }
       - { label: "الصورة البارزة", name: "image", widget: "image", required: false }
-      - { label: "محتوى الخبر", name: "body", widget: "markdown" }
+      - { label: "وقت القراءة بالدقائق", name: "reading_time", widget: "number", value_type: "int", min: 1, required: false }
+      - { label: "المصادر", name: "sources", widget: "list", required: false, field: { label: "المصدر", name: "source", widget: "string" } }
+      - { label: "الوثائق المرتبطة", name: "documents", widget: "list", required: false, field: { label: "الوثيقة", name: "document", widget: "file" } }
+      - { label: "ملاحظات المنهجية", name: "methodology", widget: "text", required: false }
+      - { label: "حق الرد", name: "right_of_reply", widget: "text", required: false }
+      - { label: "محتوى المادة", name: "body", widget: "markdown" }
+
+  - name: "pages"
+    label: "صفحات المنصة"
+    folder: "pages"
+    create: true
+    delete: false
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "الوصف", name: "description", widget: "text", required: false }
+      - { label: "المحتوى", name: "body", widget: "markdown" }
