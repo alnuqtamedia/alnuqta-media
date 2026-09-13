@@ -2,7 +2,7 @@ backend:
   name: github
   repo: alnuqtamedia/alnuqta-media
   branch: main
-
+  auth_type: token
 media_folder: "images"
 public_folder: "/images"
 
