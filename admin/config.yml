@@ -1,0 +1,19 @@
+backend:
+  name: github
+  repo: alnuqtamedia/alnuqta-media
+  branch: main
+
+media_folder: "images"
+public_folder: "/images"
+
+collections:
+  - name: "posts"
+    label: "الأخبار والتقارير"
+    folder: "posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "تاريخ النشر", name: "date", widget: "datetime" }
+      - { label: "الصورة البارزة", name: "image", widget: "image", required: false }
+      - { label: "محتوى الخبر", name: "body", widget: "markdown" }
