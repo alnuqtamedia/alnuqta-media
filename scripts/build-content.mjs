@@ -6,6 +6,9 @@ const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const postsDir = path.join(root, "content", "posts");
 const outputDirs = [path.join(root, "public", "data"), path.join(root, "data")];
 
+const allowedStatuses = new Set(["draft", "review", "ready", "published"]);
+const allowedSections = new Set(["investigation", "report", "news", "analysis", "interview", "human-story", "video", "gallery"]);
+
 function parseScalar(value) {
   const trimmed = value.trim();
   if (!trimmed) return "";
@@ -58,6 +61,16 @@ function isContentFile(name) {
   return !name.startsWith(".") && !name.startsWith("_") && !["readme", "schema", "changelog"].includes(base);
 }
 
+function validatePost(post, file) {
+  if (!post.title) throw new Error(`${file}: title is required`);
+  if (!allowedStatuses.has(post.status)) throw new Error(`${file}: invalid status "${post.status}"`);
+  if (!allowedSections.has(post.section)) throw new Error(`${file}: invalid section "${post.section}"`);
+  if (!post.date || !/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(String(post.date))) throw new Error(`${file}: date must be YYYY-MM-DD or an ISO datetime`);
+  if (post.reading_time !== undefined && (!Number.isInteger(post.reading_time) || post.reading_time < 1)) throw new Error(`${file}: reading_time must be an integer >= 1`);
+  if (post.sources !== undefined && !Array.isArray(post.sources)) throw new Error(`${file}: sources must be a list`);
+  if (post.documents !== undefined && !Array.isArray(post.documents)) throw new Error(`${file}: documents must be a list`);
+}
+
 async function readCollection(dir) {
   try {
     const entries = await readdir(dir, { withFileTypes: true });
@@ -67,7 +80,9 @@ async function readCollection(dir) {
       const source = await readFile(path.join(dir, file), "utf8");
       const { data, body } = parseFrontmatter(source);
       if (!data.title || !data.status) continue;
-      items.push({ slug: stripExtension(file), ...data, body });
+      const post = { slug: stripExtension(file), ...data, body };
+      validatePost(post, file);
+      items.push(post);
     }
     return items;
   } catch (error) {
