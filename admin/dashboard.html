@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>لوحة غرفة الأخبار | النقطة</title><script src="https://cdn.tailwindcss.com"></script><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet"><style>body{font-family:Cairo,sans-serif}</style></head>
+<body class="bg-slate-100 text-slate-900">
+<main class="max-w-6xl mx-auto p-5 md:p-8">
+<div class="flex flex-wrap items-center justify-between gap-4 mb-8"><div><p class="text-red-700 font-bold">النقطة</p><h1 class="text-3xl font-extrabold">لوحة غرفة الأخبار</h1><p class="text-slate-500 mt-2">واجهة متابعة تحريرية — ليست نظام صلاحيات أو مصادقة.</p></div><div class="flex gap-2"><a href="../newsroom.html" class="rounded-xl bg-slate-900 text-white px-4 py-2">عرض المنشور</a><a href="../index.html" class="rounded-xl bg-white border px-4 py-2">الرئيسية</a></div></div>
+<div id="stats" class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"></div>
+<div class="bg-white rounded-2xl border overflow-hidden"><div class="p-4 border-b flex flex-col md:flex-row gap-3"><input id="q" class="flex-1 border rounded-xl px-4 py-2" placeholder="ابحث بالعنوان أو الكاتب أو القسم..." aria-label="البحث"><select id="s" class="border rounded-xl px-4 py-2" aria-label="تصفية الحالة"><option value="all">كل الحالات</option><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="ready">جاهز للنشر</option><option value="published">منشور</option></select></div><div id="list" class="divide-y"></div></div>
+</main>
+<script>
+let posts=[];
+const labels={draft:'مسودة',review:'قيد المراجعة',ready:'جاهز للنشر',published:'منشور'};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const formatDate=v=>{if(!v)return '';const d=new Date(v);return Number.isNaN(d.getTime())?esc(v):d.toLocaleDateString('ar-IQ',{year:'numeric',month:'short',day:'numeric'});};
+function render(){const st=document.getElementById('s').value,q=document.getElementById('q').value.trim().toLowerCase();const f=posts.filter(p=>(st==='all'||p.status===st)&&(`${p.title||''} ${p.author||''} ${p.section||''}`.toLowerCase().includes(q)));document.getElementById('list').innerHTML=f.length?f.map(p=>`<div class="p-4 flex flex-wrap items-center justify-between gap-4"><div class="min-w-0"><div class="font-bold text-lg">${esc(p.title||'بدون عنوان')}</div><div class="text-sm text-slate-500 mt-1">${esc(p.author||'غير محدد')} · ${esc(p.section||'غير محدد')} · ${formatDate(p.date)}</div></div><div class="flex items-center gap-3"><span class="text-sm font-bold">${esc(labels[p.status]||p.status||'غير محدد')}</span>${p.status==='published'&&p.slug?`<a class="text-red-700 font-bold text-sm" href="../newsroom.html?slug=${encodeURIComponent(p.slug)}">فتح المادة ←</a>`:''}</div></div>`).join(''):'<div class="p-8 text-center text-slate-500">لا توجد مواد مطابقة.</div>';}
+async function load(){try{const r=await fetch('../data/posts.json',{cache:'no-store'});if(!r.ok)throw Error();const d=await r.json();posts=Array.isArray(d.posts)?d.posts:[];document.getElementById('stats').innerHTML=['draft','review','ready','published'].map(s=>`<div class="bg-white border rounded-2xl p-5"><div class="text-sm text-slate-500">${labels[s]}</div><div class="text-3xl font-extrabold mt-2">${posts.filter(p=>p.status===s).length}</div></div>`).join('');render()}catch(e){document.getElementById('stats').innerHTML='';document.getElementById('list').innerHTML='<div class="p-8 text-center text-red-700">تعذر تحميل بيانات غرفة الأخبار حاليًا.</div>';}}
+document.getElementById('q').oninput=render;document.getElementById('s').onchange=render;load();
+</script>
+</body></html>
