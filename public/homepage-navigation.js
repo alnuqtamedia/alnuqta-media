@@ -1,4 +1,5 @@
 (() => {
+  // Real page navigation for the public Alnuqta Media site.
   const routes = {
     home: 'index.html',
     newsroom: 'newsroom.html',
