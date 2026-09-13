@@ -2,17 +2,48 @@ backend:
   name: github
   repo: alnuqtamedia/alnuqta-media
   branch: main
+  auth_type: implicit
 
+publish_mode: editorial_workflow
 media_folder: "public/uploads"
 public_folder: "/uploads"
 
 collections:
   - name: "posts"
-    label: "المقالات والأخبار"
+    label: "غرفة الأخبار"
+    label_singular: "مادة صحفية"
     folder: "content/posts"
     create: true
+    delete: false
     slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    summary: "{{title}} — {{section}} — {{status}}"
+    sortable_fields: ["date", "title", "status"]
     fields:
       - { label: "العنوان", name: "title", widget: "string" }
-      - { label: "تاريخ النشر", name: "date", widget: "datetime" }
-      - { label: "محتوى التقرير", name: "body", widget: "markdown" }
+      - { label: "العنوان الفرعي", name: "subtitle", widget: "string", required: false }
+      - { label: "النوع الصحفي", name: "section", widget: "select", options: ["تحقيق استقصائي", "تقرير", "خبر", "تحليل", "مقابلة", "قصة إنسانية", "فيديو", "معرض صور"] }
+      - { label: "الحالة التحريرية", name: "status", widget: "select", default: "مسودة", options: ["مسودة", "قيد المراجعة", "جاهز للنشر", "منشور"] }
+      - { label: "تاريخ النشر", name: "date", widget: "datetime", format: "YYYY-MM-DDTHH:mm:ssZ" }
+      - { label: "الكاتب", name: "author", widget: "string", required: false }
+      - { label: "المحرر", name: "editor", widget: "string", required: false }
+      - { label: "الملخص", name: "excerpt", widget: "text", required: false }
+      - { label: "الصورة البارزة", name: "image", widget: "image", required: false }
+      - { label: "وقت القراءة بالدقائق", name: "reading_time", widget: "number", value_type: "int", min: 1, required: false }
+      - { label: "المصادر", name: "sources", widget: "list", required: false, field: { label: "المصدر", name: "source", widget: "string" } }
+      - { label: "الوثائق المرتبطة", name: "documents", widget: "list", required: false, field: { label: "الوثيقة", name: "document", widget: "file" } }
+      - { label: "الصور المرتبطة", name: "photos", widget: "list", required: false, field: { label: "الصورة", name: "photo", widget: "image" } }
+      - { label: "رابط الفيديو", name: "video_url", widget: "string", required: false }
+      - { label: "البيانات والأرقام", name: "data_notes", widget: "text", required: false }
+      - { label: "المنهجية", name: "methodology", widget: "text", required: false }
+      - { label: "حق الرد", name: "right_of_reply", widget: "text", required: false }
+      - { label: "محتوى المادة", name: "body", widget: "markdown" }
+
+  - name: "pages"
+    label: "صفحات المنصة"
+    folder: "content/pages"
+    create: true
+    delete: false
+    fields:
+      - { label: "العنوان", name: "title", widget: "string" }
+      - { label: "الوصف", name: "description", widget: "text", required: false }
+      - { label: "المحتوى", name: "body", widget: "markdown" }
