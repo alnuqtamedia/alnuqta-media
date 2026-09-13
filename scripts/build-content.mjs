@@ -52,14 +52,21 @@ function parseFrontmatter(source) {
 
 function stripExtension(name) { return name.replace(/\.(md|mdx)$/i, ""); }
 
+function isContentFile(name) {
+  if (!/\.(md|mdx)$/i.test(name)) return false;
+  const base = stripExtension(name).toLowerCase();
+  return !name.startsWith(".") && !name.startsWith("_") && !["readme", "schema", "changelog"].includes(base);
+}
+
 async function readCollection(dir) {
   try {
     const entries = await readdir(dir, { withFileTypes: true });
-    const files = entries.filter((entry) => entry.isFile() && /\.(md|mdx)$/i.test(entry.name)).map((entry) => entry.name).sort();
+    const files = entries.filter((entry) => entry.isFile() && isContentFile(entry.name)).map((entry) => entry.name).sort();
     const items = [];
     for (const file of files) {
       const source = await readFile(path.join(dir, file), "utf8");
       const { data, body } = parseFrontmatter(source);
+      if (!Object.keys(data).length) continue;
       items.push({ slug: stripExtension(file), ...data, body });
     }
     return items;
