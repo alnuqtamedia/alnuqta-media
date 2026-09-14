@@ -9,8 +9,8 @@
     return;
   }
 
-  // Keep the public query schema-safe: the newsroom only needs published rows.
-  const endpoint = `${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published&order=date.desc`;
+  // Keep the public query schema-safe: do not assume optional columns exist.
+  const endpoint = `${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published`;
 
   fetch(endpoint, {
     headers: {
