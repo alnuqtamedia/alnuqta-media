@@ -1,4 +1,9 @@
 (() => {
+  // When the live Supabase public feed is configured, let it be the single
+  // source of truth for published homepage articles. The static JSON remains
+  // available as a fallback when Supabase is not configured.
+  if (window.ALNUQTA_SUPABASE_PUBLIC?.url && window.ALNUQTA_SUPABASE_PUBLIC?.anonKey) return;
+
   const sectionLabels = {
     investigation: 'تحقيق استقصائي',
     report: 'تقرير',
