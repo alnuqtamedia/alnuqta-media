@@ -1,5 +1,5 @@
 (() => {
-  const config = window.ALNUQTA_SUPABASE || {};
+  const config = window.ALNUQTA_SUPABASE_PUBLIC || {};
   const url = config.url || '';
   const key = config.anonKey || '';
   const statusEl = document.getElementById('status');
@@ -9,9 +9,7 @@
     return;
   }
 
-  // Keep the public query schema-safe: the newsroom only needs published rows,
-  // and selecting all columns avoids a 400 when optional columns differ between
-  // the deployed Supabase schema and the frontend.
+  // Keep the public query schema-safe: the newsroom only needs published rows.
   const endpoint = `${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published&order=date.desc`;
 
   fetch(endpoint, {
