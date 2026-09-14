@@ -19,7 +19,8 @@ if (!missing.length) {
   process.exit(0);
 }
 
+// External scripts must be placed AFTER the inline script closes.
 const scripts = missing.map((marker) => `    ${marker}`).join('\n');
-const updated = html.replace(closingScript, `${scripts}\n${closingScript}`);
+const updated = html.replace(closingScript, `    </script>\n${scripts}\n</body>`);
 fs.writeFileSync(file, updated);
 console.log(`Injected ${missing.length} homepage script(s).`);
