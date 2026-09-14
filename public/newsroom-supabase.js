@@ -1,5 +1,5 @@
 (() => {
-  const config = window.ALNUQTA_SUPABASE_PUBLIC || {};
+  const config = window.ALNUQTA_SUPABASE || {};
   const url = config.url || '';
   const key = config.anonKey || '';
   const statusEl = document.getElementById('status');
