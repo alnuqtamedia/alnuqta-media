@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://alnuqtamedia.github.io/alnuqta-media/sitemap.xml
