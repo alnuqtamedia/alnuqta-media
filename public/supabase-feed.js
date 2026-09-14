@@ -40,7 +40,7 @@
       ? `<img src="${escapeHtml(post.image)}" alt="${escapeHtml(post.image_alt || post.title)}" class="w-full h-44 object-cover rounded-lg mb-4" loading="lazy">`
       : '';
     return `<article class="bg-navy-card border border-navy-light hover:border-brandRed/50 rounded-xl p-5 flex flex-col justify-between transition duration-300 group shadow-lg">
-      <div class="space-y-3">${image}<div class="flex items-center justify-between gap-3 text-xs"><span class="bg-brandRed/20 text-red-300 font-cairo font-bold px-2.5 py-0.5 rounded border border-brandRed/30">${escapeHtml(section)}</span><span class="text-gray-300 font-mono">${formatDate(post.date || post.published_at)}</span></div>
+      <div class="space-y-3">${image}<div class="flex items-center justify-between gap-3 text-xs"><span class="bg-brandRed/20 text-red-300 font-cairo font-bold px-2.5 py-0.5 rounded border border-brandRed/30">${escapeHtml(section)}</span><span class="text-gray-300 font-mono">${formatDate(post.date)}</span></div>
       <h3 class="font-cairo font-bold text-base text-white group-hover:text-red-400 transition">${escapeHtml(post.title)}</h3>
       <p class="text-xs text-gray-200 font-tajawal line-clamp-3 leading-relaxed">${escapeHtml(excerpt)}</p></div>
       <div class="pt-4 mt-4 border-t border-navy-light/60 flex items-center justify-between gap-3"><a href="newsroom.html?slug=${encodeURIComponent(post.slug)}" class="text-xs font-cairo font-bold text-white group-hover:text-red-400 flex items-center gap-1">قراءة المادة <i data-lucide="arrow-left" class="w-3.5 h-3.5" aria-hidden="true"></i></a><span class="text-[11px] text-gray-300 font-cairo">${post.reading_time ? `${escapeHtml(post.reading_time)} دقائق` : 'غرفة الأخبار'}</span></div>
@@ -57,8 +57,10 @@
     if (window.lucide) window.lucide.createIcons();
   };
 
-  const select = 'id,slug,title,subtitle,excerpt,section,status,date,published_at,author,editor,reading_time,image,image_alt,body,methodology,right_of_reply,sources,documents';
-  const endpoint = `${url.replace(/\/$/, '')}/rest/v1/articles?select=${encodeURIComponent(select)}&status=eq.published&order=published_at.desc.nullslast,date.desc&limit=6`;
+  // Keep the public feed aligned with the newsroom schema. The newsroom itself
+  // already uses select=* successfully, so avoid optional columns that can cause
+  // a 400 when the Supabase table does not contain them.
+  const endpoint = `${url.replace(/\/$/, '')}/rest/v1/articles?select=*&status=eq.published&order=date.desc&limit=6`;
 
   fetch(endpoint, { headers, cache: 'no-store' })
     .then((response) => {
