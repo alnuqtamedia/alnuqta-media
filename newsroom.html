@@ -32,6 +32,6 @@ function showListing(){document.getElementById('reader').classList.add('hidden')
 async function load(){try{const r=await fetch('data/posts.json',{cache:'no-store'});if(!r.ok)throw Error();const data=await r.json();posts=(data.posts||[]).filter(p=>p.status==='published');render();const slug=new URLSearchParams(location.search).get('slug');if(slug)openPost(slug,false);}catch(e){document.getElementById('status').textContent='تعذر تحميل المواد حاليًا.';}}
 document.getElementById('search').oninput=render;document.getElementById('section').onchange=render;document.getElementById('back').onclick=showListing;window.onpopstate=()=>{const slug=new URLSearchParams(location.search).get('slug');slug?openPost(slug,false):showListing();};load();
 </script>
-<script src="public/supabase-public-config.js"></script>
+<script src="public/supabase-public.js"></script>
 <script src="public/newsroom-supabase.js"></script>
 </body></html>
