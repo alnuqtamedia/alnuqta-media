@@ -57,16 +57,21 @@
     if (window.lucide) window.lucide.createIcons();
   };
 
-  // Keep the public feed aligned with the newsroom schema. The newsroom itself
-  // already uses select=* successfully, so avoid optional columns that can cause
-  // a 400 when the Supabase table does not contain them.
-  const endpoint = `${url.replace(/\/$/, '')}/rest/v1/articles?select=*&status=eq.published&order=date.desc&limit=6`;
+  // Do not order by optional columns; only request published rows.
+  const endpoint = `${url.replace(/\/$/, '')}/rest/v1/articles?select=*&status=eq.published`;
 
   fetch(endpoint, { headers, cache: 'no-store' })
     .then((response) => {
       if (!response.ok) throw new Error(`Supabase feed request failed: ${response.status}`);
       return response.json();
     })
-    .then((posts) => render(Array.isArray(posts) ? posts : []))
+    .then((posts) => {
+      if (!Array.isArray(posts)) return;
+      posts = posts.map((post, index) => ({
+        ...post,
+        slug: String(post.slug || post.id || `published-${index}`)
+      }));
+      render(posts);
+    })
     .catch((error) => console.warn('Supabase public feed unavailable; keeping static newsroom feed.', error));
 })();
