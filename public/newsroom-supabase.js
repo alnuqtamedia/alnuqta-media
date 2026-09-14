@@ -9,8 +9,10 @@
     return;
   }
 
-  const fields = 'id,slug,title,subtitle,excerpt,section,status,date,published_at,author,editor,reading_time,image,image_alt,body,methodology,right_of_reply,sources,documents';
-  const endpoint = `${url.replace(/\/$/,'')}/rest/v1/articles?select=${encodeURIComponent(fields)}&status=eq.published&order=published_at.desc.nullslast,date.desc`;
+  // Keep the public query schema-safe: the newsroom only needs published rows,
+  // and selecting all columns avoids a 400 when optional columns differ between
+  // the deployed Supabase schema and the frontend.
+  const endpoint = `${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published&order=date.desc`;
 
   fetch(endpoint, {
     headers: {
