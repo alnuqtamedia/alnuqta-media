@@ -9,7 +9,6 @@
     return;
   }
 
-  // Keep the public query schema-safe: do not assume optional columns exist.
   const endpoint = `${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published`;
 
   fetch(endpoint, {
@@ -26,6 +25,13 @@
     })
     .then(data => {
       if (!Array.isArray(data)) throw new Error('Supabase returned an invalid newsroom response.');
+
+      // Some existing Supabase rows may not have a slug. Give every published
+      // row a stable browser key so the reader button can always open it.
+      data = data.map((p, i) => ({
+        ...p,
+        slug: String(p.slug || p.id || `published-${i}`)
+      }));
 
       window.__ALNUQTA_SUPABASE_POSTS__ = data;
 
