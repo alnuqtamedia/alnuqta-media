@@ -35,6 +35,12 @@ jobs:
       - name: Inject dynamic homepage feed
         run: node scripts/inject-homepage-feed.mjs
 
+      - name: Generate Supabase runtime config
+        env:
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          node -e "const fs=require('fs'); const key=process.env.SUPABASE_ANON_KEY||''; const js=\"window.ALNUQTA_SUPABASE_PUBLIC = { url: 'https://zsqvmuqlmtnhndwuqlfy.supabase.co', anonKey: \"+JSON.stringify(key)+\" };\"; fs.writeFileSync('public/supabase-public-config.js', js+'\\n');"
+
       - name: Configure Pages
         uses: actions/configure-pages@v5
 
