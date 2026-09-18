@@ -35,11 +35,32 @@ jobs:
       - name: Inject dynamic homepage feed
         run: node scripts/inject-homepage-feed.mjs
 
-      - name: Generate Supabase runtime config
+      - name: Generate and verify Supabase runtime config
         env:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
-          node -e "const fs=require('fs'); const key=process.env.SUPABASE_ANON_KEY||''; const js=\"window.ALNUQTA_SUPABASE_PUBLIC = { url: 'https://zsqvmuqlmtnhndwuqlfy.supabase.co', anonKey: \"+JSON.stringify(key)+\" };\"; fs.writeFileSync('public/supabase-public-config.js', js+'\\n');"
+          node <<'NODE'
+          const fs = require('fs');
+          const key = (process.env.SUPABASE_ANON_KEY || '').trim();
+          if (!key) {
+            console.error('SUPABASE_ANON_KEY is missing or empty.');
+            process.exit(1);
+          }
+          const config = {
+            url: 'https://zsqvmuqlmtnhndwuqlfy.supabase.co',
+            anonKey: key
+          };
+          fs.writeFileSync(
+            'public/supabase-public-config.js',
+            'window.ALNUQTA_SUPABASE_PUBLIC = ' + JSON.stringify(config) + ';\n'
+          );
+          const generated = fs.readFileSync('public/supabase-public-config.js', 'utf8');
+          if (!generated.includes('ALNUQTA_SUPABASE_PUBLIC') || !generated.includes(key)) {
+            console.error('Supabase runtime config verification failed.');
+            process.exit(1);
+          }
+          console.log('Supabase runtime config generated and verified.');
+          NODE
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
