@@ -32,6 +32,16 @@ Deno.serve(async (req) => {
       if (error) throw error
       return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
     }
+    if (action === 'disable' || action === 'enable') {
+      if (!targetId) throw new Error('معرّف العضو مطلوب.')
+      if (targetId === user.id) throw new Error('لا يمكن تعطيل حساب الـOwner المستخدم حاليًا.')
+      const { error } = await admin.auth.admin.updateUserById(targetId, {
+        ban_duration: action === 'disable' ? '876000h' : 'none'
+      })
+      if (error) throw error
+      return new Response(JSON.stringify({ ok: true, action }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
     const fullName = String(body.full_name || '').trim()
     const email = String(body.email || '').trim().toLowerCase()
     const password = String(body.password || '')
