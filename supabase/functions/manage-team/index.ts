@@ -43,7 +43,7 @@ Deno.serve(async (req) => {
     }
     if (action === 'role') {
       const nextRole = String(body.role || '')
-      if (!targetId || !['owner','editor','writer'].includes(nextRole)) throw new Error('بيانات تعديل الدور غير صالحة.')
+      if (!targetId || !['owner','editor','writer','designer','photographer','videographer'].includes(nextRole)) throw new Error('بيانات تعديل الدور غير صالحة.')
       if (targetId === user.id && nextRole !== 'owner') throw new Error('لا يمكن خفض صلاحية حساب الـOwner المستخدم حاليًا.')
       const { error } = await admin.from('profiles').update({ role: nextRole }).eq('id', targetId)
       if (error) throw error
@@ -64,7 +64,7 @@ Deno.serve(async (req) => {
     const password = String(body.password || '')
     const role = String(body.role || 'writer')
     if (!fullName || !email || password.length < 8) throw new Error('الاسم والإيميل وكلمة مرور من 8 أحرف مطلوبة.')
-    if (!['owner','editor','writer'].includes(role)) throw new Error('الدور غير صالح.')
+    if (!['owner','editor','writer','designer','photographer','videographer'].includes(role)) throw new Error('الدور غير صالح.')
 
     const { data: created, error: createError } = await admin.auth.admin.createUser({
       email, password, email_confirm: true, user_metadata: { full_name: fullName }
