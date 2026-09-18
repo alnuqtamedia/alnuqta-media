@@ -28,6 +28,7 @@
 
       // Some existing Supabase rows may not have a slug. Give every published
       // row a stable browser key so the reader button can always open it.
+      data = data.filter(p => String(p.title || '').trim()).sort((a,b) => new Date(b.published_at||b.updated_at||b.created_at||0)-new Date(a.published_at||a.updated_at||a.created_at||0));
       data = data.map((p, i) => ({
         ...p,
         slug: String(p.slug || p.id || `published-${i}`)
