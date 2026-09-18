@@ -29,9 +29,10 @@
 <div class="field"><label>وقت القراءة بالدقائق</label><input id="readingTime" type="number" min="1"></div><div class="field"><label>المصادر — مصدر في كل سطر</label><textarea id="sources" style="min-height:90px"></textarea></div>
 <div class="field"><label>المنهجية</label><textarea id="methodology" style="min-height:90px"></textarea></div><div class="field"><label>حق الرد</label><textarea id="rightOfReply" style="min-height:90px"></textarea></div><div class="field"><label>محتوى المادة</label><textarea id="body"></textarea></div>
 <div class="actions"><button type="submit">حفظ المادة</button><button type="button" id="reset" class="ghost">تفريغ</button></div></form></section></div></main>
+<script src="../public/supabase-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL='https://zsqvmuqlmtnhndwuqlfy.supabase.co';const key=localStorage.getItem('alnuqta_supabase_anon_key');if(!key)window.location.href='./index.html';
+const config=window.ALNUQTA_SUPABASE_PUBLIC||{};const SUPABASE_URL=config.url||'';const key=config.anonKey||'';if(!SUPABASE_URL||!key)window.location.href='./index.html';
 const client=supabase.createClient(SUPABASE_URL,key);let currentUser=null,currentProfile=null,articles=[];const $=id=>document.getElementById(id);const labels={owner:'مالك المنصة',editor:'محرر',writer:'كاتب'};const stateLabels={draft:'مسودة',review:'قيد المراجعة',ready:'جاهز للنشر',published:'منشور'};
 function msg(v,ok=false){$('status').textContent=v;$('status').className='status'+(ok?' ok':'')}
 function esc(v=''){return String(v).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
