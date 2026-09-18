@@ -18,29 +18,26 @@
   <form id="loginForm">
     <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required></div>
     <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required></div>
-    <div class="field" id="keyField"><label for="anonKey">Publishable / anon key</label><input id="anonKey" type="password" autocomplete="off" placeholder="الصق المفتاح من Supabase هنا"></div>
     <button type="submit">دخول إلى غرفة الأخبار</button>
   </form>
   <div id="status" class="status" aria-live="polite"></div>
-  <p class="note">المفتاح العام الخاص بـ Supabase يُستخدم من المتصفح ولا يمنح صلاحيات Owner بحد ذاته؛ الحماية الفعلية موجودة في RLS وقواعد قاعدة البيانات. لا تضع service_role key هنا.</p>
+  <p class="note">الدخول مخصص لفريق النقطة، وتُطبّق الصلاحيات حسب حساب المستخدم.</p>
   <div class="links"><a href="../newsroom.html">العودة إلى الموقع</a><a href="./dashboard.html">لوحة الإدارة</a></div>
 </main>
+<script src="../public/supabase-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = 'https://zsqvmuqlmtnhndwuqlfy.supabase.co';
-const savedKey = localStorage.getItem('alnuqta_supabase_anon_key') || '';
-const keyInput = document.getElementById('anonKey');
-if (savedKey) keyInput.value = savedKey;
+const config = window.ALNUQTA_SUPABASE_PUBLIC || {};
+const SUPABASE_URL = config.url || '';
+const SUPABASE_ANON_KEY = config.anonKey || '';
 const form = document.getElementById('loginForm');
 const status = document.getElementById('status');
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   status.textContent = 'جاري تسجيل الدخول…';
-  const key = keyInput.value.trim();
-  if (!key) { status.textContent = 'أدخل مفتاح Supabase العام أولًا.'; return; }
-  localStorage.setItem('alnuqta_supabase_anon_key', key);
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { status.textContent = 'إعداد الاتصال غير متاح حاليًا. أعد تحميل الصفحة.'; return; }
   const { createClient } = supabase;
-  const client = createClient(SUPABASE_URL, key);
+  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const { data, error } = await client.auth.signInWithPassword({
     email: document.getElementById('email').value.trim(),
     password: document.getElementById('password').value
