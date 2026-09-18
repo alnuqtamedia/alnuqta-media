@@ -24,6 +24,23 @@ Deno.serve(async (req) => {
     const body = await req.json()
     const action = String(body.action || 'create')
     const targetId = String(body.user_id || '')
+    if (action === 'list') {
+      const { data: authData, error: authError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+      if (authError) throw authError
+      const ids = (authData.users || []).map((u) => u.id)
+      let profiles = []
+      if (ids.length) {
+        const result = await admin.from('profiles').select('id,full_name,role').in('id', ids)
+        if (result.error) throw result.error
+        profiles = result.data || []
+      }
+      const byId = new Map(profiles.map((p) => [p.id, p]))
+      const members = (authData.users || []).map((u) => {
+        const p = byId.get(u.id)
+        return { id: u.id, email: u.email || '', full_name: p?.full_name || u.user_metadata?.full_name || '', role: p?.role || '', active: !u.banned_until || new Date(u.banned_until).getTime() <= Date.now(), has_profile: Boolean(p) }
+      })
+      return new Response(JSON.stringify({ ok: true, members }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
     if (action === 'role') {
       const nextRole = String(body.role || '')
       if (!targetId || !['owner','editor','writer'].includes(nextRole)) throw new Error('بيانات تعديل الدور غير صالحة.')
