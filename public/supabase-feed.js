@@ -52,10 +52,13 @@
   const render = (posts) => {
     const headings = [...document.querySelectorAll('#section-home h2')];
     const heading = headings.find((el) => el.textContent.includes('أحدث التحقيقات الاستقصائية'));
-    const grid = heading?.closest('section')?.querySelector('.grid');
-    if (!grid) return;
-    if (!posts.length) return;
-    grid.innerHTML = posts.slice(0, 6).map(card).join('');
+    const section = heading?.closest('section');
+    const grid = section?.querySelector('.grid');
+    if (!grid || !posts.length) return;
+    const featured = posts[0];
+    const rest = posts.slice(1, 7);
+    const featuredHtml = `<article class="md:col-span-2 bg-navy-card border border-brandRed/40 rounded-xl overflow-hidden shadow-xl group"><a href="newsroom.html?slug=${encodeURIComponent(featured.slug)}" class="grid md:grid-cols-2"><div>${featured.cover_image_url||featured.image||featured.gallery?.[0]?.url?`<img src="${escapeHtml(featured.cover_image_url||featured.image||featured.gallery?.[0]?.url)}" alt="${escapeHtml(featured.title)}" class="w-full h-full min-h-64 object-cover" loading="eager">`:''}</div><div class="p-6 flex flex-col justify-center"><span class="text-red-300 text-xs font-bold">الأحدث · ${escapeHtml(labels[featured.section]||'مادة صحفية')}</span><h3 class="font-cairo font-extrabold text-2xl text-white mt-3 group-hover:text-red-400 transition">${escapeHtml(featured.title)}</h3><p class="text-gray-200 mt-3 leading-relaxed">${escapeHtml(featured.excerpt||featured.subtitle||'')}</p><div class="text-xs text-gray-300 mt-5">${formatDate(featured.published_at||featured.created_at)}</div></div></a></article>`;
+    grid.innerHTML = featuredHtml + rest.map(card).join('');
     if (window.lucide) window.lucide.createIcons();
   };
 
