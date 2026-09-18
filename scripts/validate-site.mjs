@@ -10,6 +10,9 @@ const requiredFiles = [
   "data/posts.json",
   "public/data/posts.json",
   "tina/config.ts",
+  "robots.txt",
+  "sitemap.xml",
+  ".github/workflows/pages-deploy.yml",
 ];
 
 for (const file of requiredFiles) {
@@ -19,6 +22,10 @@ for (const file of requiredFiles) {
 
 const index = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const newsroom = fs.readFileSync(path.join(root, "newsroom.html"), "utf8");
+const adminLogin = fs.readFileSync(path.join(root, "admin/index.html"), "utf8");
+const dashboard = fs.readFileSync(path.join(root, "admin/dashboard.html"), "utf8");
+const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
+const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
 const posts = JSON.parse(fs.readFileSync(path.join(root, "data/posts.json"), "utf8"));
 const publicPosts = JSON.parse(fs.readFileSync(path.join(root, "public/data/posts.json"), "utf8"));
 
@@ -36,6 +43,13 @@ for (const post of posts.posts) {
 if (!/published/.test(newsroom) || !/filter\s*\(/.test(newsroom)) {
   throw new Error("newsroom.html must contain a publication-status filter for the public reader");
 }
+
+if (!index.includes('rel="canonical"') || !newsroom.includes('rel="canonical"')) throw new Error("Public pages need canonical URLs");
+if (!robots.includes("sitemap.xml")) throw new Error("robots.txt must reference sitemap.xml");
+if (!sitemap.includes("newsroom.html") || !sitemap.includes("alnuqtamedia.github.io/alnuqta-media/")) throw new Error("sitemap.xml is missing core public URLs");
+if (/href=["'][^"']*admin\/?["']/.test(index)) throw new Error("Public homepage must not expose the private admin login link");
+if (!adminLogin.includes("../public/supabase-public-config.js") || !dashboard.includes("../public/supabase-public-config.js")) throw new Error("Admin pages must load Supabase runtime config");
+if (!dashboard.includes("owner_list_team") || !dashboard.includes("newsroom_team_directory")) throw new Error("Dashboard newsroom team integrations are missing");
 
 const misleadingSecurityClaims = [
   "تشفير الاتصال وآلية حماية المصادر مفعلة",
