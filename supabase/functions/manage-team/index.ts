@@ -22,6 +22,16 @@ Deno.serve(async (req) => {
     if (profile?.role !== 'owner') throw new Error('هذه العملية متاحة للـOwner فقط.')
 
     const body = await req.json()
+    const action = String(body.action || 'create')
+    const targetId = String(body.user_id || '')
+    if (action === 'role') {
+      const nextRole = String(body.role || '')
+      if (!targetId || !['owner','editor','writer'].includes(nextRole)) throw new Error('بيانات تعديل الدور غير صالحة.')
+      if (targetId === user.id && nextRole !== 'owner') throw new Error('لا يمكن خفض صلاحية حساب الـOwner المستخدم حاليًا.')
+      const { error } = await admin.from('profiles').update({ role: nextRole }).eq('id', targetId)
+      if (error) throw error
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
     const fullName = String(body.full_name || '').trim()
     const email = String(body.email || '').trim().toLowerCase()
     const password = String(body.password || '')
