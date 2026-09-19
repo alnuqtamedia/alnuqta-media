@@ -1,1 +1,45 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>إرسال معلومة | النقطة</title><script src="https://cdn.tailwindcss.com"></script><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet"><style>body{font-family:Tajawal,sans-serif;background:#06101E;color:#fff}.font-cairo{font-family:Cairo,sans-serif}</style></head><body><header class="border-b border-slate-700 bg-[#0A1A2F]"><div class="max-w-5xl mx-auto px-5 py-5 flex flex-wrap items-center justify-between gap-4"><a href="index.html" class="font-cairo font-black text-2xl">النقطة <span class="text-red-500">Media</span></a><nav class="flex gap-4 text-sm font-cairo font-bold"><a href="index.html" class="hover:text-red-400">الرئيسية</a><a href="newsroom.html" class="hover:text-red-400">غرفة الأخبار</a><a href="about.html" class="hover:text-red-400">عن النقطة</a></nav></div></header><main class="max-w-3xl mx-auto px-5 py-12"><h1 class="font-cairo font-black text-4xl">إرسال معلومة أو وثيقة</h1><p class="text-slate-300 mt-4 leading-8">هذه الواجهة مخصصة للمعلومات العامة فقط. لا ترسل مواد سرية أو معلومات قد تكشف هويتك؛ قناة استقبال آمنة للمصادر الحساسة لم تُفعّل بعد.</p><form class="mt-8 bg-[#122238] border border-slate-700 rounded-2xl p-6 space-y-5" onsubmit="event.preventDefault();alert('تم استلام النموذج تجريبيًا. لم يتم تفعيل قناة استقبال آمنة للمصادر الحساسة بعد.')"><div><label class="block font-cairo font-bold text-sm mb-2">موضوع المعلومة</label><input required class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white" placeholder="عنوان مختصر للقضية"></div><div><label class="block font-cairo font-bold text-sm mb-2">التفاصيل</label><textarea required rows="7" class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white" placeholder="اكتب المعلومات والتواريخ والسياق..."></textarea></div><div class="border border-red-500/30 bg-red-500/10 rounded-lg p-4 text-sm text-red-200">تنبيه: لا تستخدم هذه الصفحة للمواد الحساسة أو لتسليم معلومات قد تعرضك للخطر.</div><button class="w-full bg-red-600 hover:bg-red-700 py-3 rounded-lg font-cairo font-bold">إرسال المعلومة</button></form></main></body></html>
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>إرسال معلومة أو وثيقة | النقطة</title>
+<meta name="description" content="إرسال معلومة عامة أو وثيقة إلى فريق النقطة للمراجعة الصحفية.">
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<style>body{font-family:Tajawal,sans-serif;background:#06101e;color:#fff}.font-cairo{font-family:Cairo,sans-serif}.hp{position:absolute!important;inset-inline-start:-10000px!important;width:1px!important;height:1px!important;overflow:hidden!important}</style>
+</head>
+<body>
+<header class="border-b border-slate-700 bg-[#0A1A2F]"><div class="max-w-5xl mx-auto px-5 py-5 flex flex-wrap items-center justify-between gap-4"><a href="index.html" class="font-cairo font-black text-2xl">النقطة <span class="text-red-500">Media</span></a><nav class="flex gap-4 text-sm font-cairo font-bold"><a href="index.html" class="hover:text-red-400">الرئيسية</a><a href="newsroom.html" class="hover:text-red-400">غرفة الأخبار</a><a href="about.html" class="hover:text-red-400">عن النقطة</a></nav></div></header>
+<main class="max-w-3xl mx-auto px-5 py-12">
+<h1 class="font-cairo font-black text-4xl">إرسال معلومة أو وثيقة</h1>
+<p class="text-slate-300 mt-4 leading-8">تصل رسالتك إلى صندوق داخلي يراجعه فريق التحرير. هذه القناة ليست SecureDrop ولا تضمن إخفاء هويتك؛ لا تستخدمها إذا كان الإرسال قد يعرّضك للخطر.</p>
+<div class="mt-6 border border-amber-400/30 bg-amber-400/10 rounded-xl p-4 text-sm text-amber-100 leading-7">الملفات تُحفظ بشكل خاص ولا تُرسل كمرفقات بريدية، لكنها لا تخضع حالياً لفحص البرمجيات الضارة وقد تحتوي على بيانات وصفية تكشف مصدرها.</div>
+<form id="sourceForm" class="mt-8 bg-[#122238] border border-slate-700 rounded-2xl p-6 space-y-5" enctype="multipart/form-data">
+<div class="hp" aria-hidden="true"><label for="website">الموقع</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
+<div><label for="subject" class="block font-cairo font-bold text-sm mb-2">موضوع المعلومة</label><input id="subject" name="subject" required minlength="5" maxlength="160" class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white" placeholder="عنوان مختصر للقضية"></div>
+<div><label for="details" class="block font-cairo font-bold text-sm mb-2">التفاصيل</label><textarea id="details" name="details" required minlength="50" maxlength="10000" rows="8" class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white" placeholder="اكتب المعلومات والتواريخ والسياق بوضوح..."></textarea><p class="text-xs text-slate-400 mt-2">من 50 إلى 10,000 حرف. لا تذكر بيانات شخصية غير ضرورية.</p></div>
+<div><label for="attachment" class="block font-cairo font-bold text-sm mb-2">وثيقة اختيارية</label><input id="attachment" name="attachment" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white"><p class="text-xs text-slate-400 mt-2">PDF أو JPG أو PNG أو WebP، بحد أقصى 10 MB.</p></div>
+<label class="flex items-start gap-3 text-sm text-slate-200 leading-6"><input id="consent" name="consent" value="yes" type="checkbox" required class="mt-1 h-4 w-4"><span>أفهم أن هذه ليست قناة إخفاء هوية، وأوافق على معالجة المعلومات والملف لغرض المراجعة الصحفية.</span></label>
+<div id="formStatus" class="min-h-6 text-sm" role="status" aria-live="polite"></div>
+<button id="submitButton" class="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 py-3 rounded-lg font-cairo font-bold">إرسال إلى فريق التحرير</button>
+</form>
+</main>
+<script src="public/supabase-public-config.js"></script>
+<script>
+const form=document.getElementById('sourceForm'),statusEl=document.getElementById('formStatus'),button=document.getElementById('submitButton');
+const messages={invalid_submission:'تحقق من طول العنوان والتفاصيل ومن الموافقة المطلوبة.',invalid_attachment:'نوع الملف غير مسموح أو حجمه أكبر من 10 MB.',request_too_large:'حجم الطلب أكبر من الحد المسموح.',rate_limited:'تم تجاوز عدد المحاولات المؤقت. حاول بعد ساعة.',submission_failed:'تعذر حفظ الإرسال الآن. حاول لاحقاً.'};
+form.addEventListener('submit',async event=>{
+  event.preventDefault();
+  const config=window.ALNUQTA_SUPABASE_PUBLIC||{},file=document.getElementById('attachment').files[0];
+  if(!config.url){statusEl.textContent='خدمة الإرسال غير مفعّلة حالياً.';statusEl.className='min-h-6 text-sm text-red-300';return}
+  if(file&&file.size>10*1024*1024){statusEl.textContent=messages.invalid_attachment;statusEl.className='min-h-6 text-sm text-red-300';return}
+  button.disabled=true;statusEl.textContent='جاري حفظ الإرسال…';statusEl.className='min-h-6 text-sm text-slate-300';
+  try{
+    const response=await fetch(config.url+'/functions/v1/source-submit',{method:'POST',body:new FormData(form),headers:config.anonKey?{apikey:config.anonKey}:{}});
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw new Error(messages[result.error]||messages.submission_failed);
+    form.reset();statusEl.textContent='تم حفظ الإرسال في صندوق التحرير. رقم المتابعة: '+result.reference;statusEl.className='min-h-6 text-sm text-emerald-300';
+  }catch(error){statusEl.textContent=error.message||messages.submission_failed;statusEl.className='min-h-6 text-sm text-red-300'}finally{button.disabled=false}
+});
+</script>
+</body></html>

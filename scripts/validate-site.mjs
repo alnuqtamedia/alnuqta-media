@@ -5,6 +5,7 @@ const root = process.cwd();
 const requiredFiles = [
   "index.html",
   "newsroom.html",
+  "submit.html",
   "admin/dashboard.html",
   "admin/index.html",
   "data/posts.json",
@@ -22,6 +23,7 @@ for (const file of requiredFiles) {
 
 const index = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const newsroom = fs.readFileSync(path.join(root, "newsroom.html"), "utf8");
+const submit = fs.readFileSync(path.join(root, "submit.html"), "utf8");
 const adminLogin = fs.readFileSync(path.join(root, "admin/index.html"), "utf8");
 const dashboard = fs.readFileSync(path.join(root, "admin/dashboard.html"), "utf8");
 const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
@@ -50,6 +52,8 @@ if (!sitemap.includes("newsroom.html") || !sitemap.includes("alnuqtamedia.github
 if (/href=["'][^"']*admin\/?["']/.test(index)) throw new Error("Public homepage must not expose the private admin login link");
 if (!adminLogin.includes("../public/supabase-public-config.js") || !dashboard.includes("../public/supabase-public-config.js")) throw new Error("Admin pages must load Supabase runtime config");
 if (!dashboard.includes("owner_list_team") || !dashboard.includes("newsroom_team_directory")) throw new Error("Dashboard newsroom team integrations are missing");
+if (!dashboard.includes("source_submissions") || !dashboard.includes("source-submissions")) throw new Error("Dashboard source inbox integration is missing");
+if (!submit.includes("/functions/v1/source-submit") || !submit.includes('name="consent"')) throw new Error("Secure source submission integration is missing");
 
 const misleadingSecurityClaims = [
   "تشفير الاتصال وآلية حماية المصادر مفعلة",
@@ -59,8 +63,8 @@ const misleadingSecurityClaims = [
 ];
 
 for (const phrase of misleadingSecurityClaims) {
-  if (index.includes(phrase)) {
-    throw new Error(`Unsafe/unverified security claim remains in index.html: ${phrase}`);
+  if (index.includes(phrase) || submit.includes(phrase)) {
+    throw new Error(`Unsafe/unverified security claim remains in a public page: ${phrase}`);
   }
 }
 
