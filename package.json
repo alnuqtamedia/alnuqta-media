@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "build:content": "node scripts/build-content.mjs",
-    "validate:site": "node scripts/validate-site.mjs"
+    "validate:site": "node scripts/validate-site.mjs",
+    "lint": "node --check scripts/build-content.mjs && node --check scripts/validate-site.mjs",
+    "test": "npm run lint && npm run validate:site"
   }
 }

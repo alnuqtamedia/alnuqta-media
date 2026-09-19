@@ -28,7 +28,8 @@ export default defineConfig({
   branch: "main",
   clientId: "cc09f18c-8a8e-4305-a776-2534e9ebb90d",
   token: "",
-  build: { outputFolder: "admin", publicFolder: "public" },
+  // Tina is retained only as a legacy editor. Never overwrite the live Supabase admin.
+  build: { outputFolder: "tina-admin", publicFolder: "public" },
   media: { tina: { mediaRoot: "images", publicFolder: "public" } },
   schema: {
     collections: [

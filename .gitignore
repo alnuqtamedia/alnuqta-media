@@ -1,0 +1,10 @@
+.DS_Store
+node_modules/
+.env
+.env.*
+!.env.example
+public/supabase-public-config.js
+tina-admin/
+dist/
+coverage/
+*.log
