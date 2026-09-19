@@ -8,6 +8,7 @@ const outputDirs = [path.join(root, "public", "data"), path.join(root, "data")];
 
 const allowedStatuses = new Set(["draft", "review", "ready", "published"]);
 const allowedSections = new Set(["investigation", "report", "news", "analysis", "interview", "human-story", "video", "gallery"]);
+const allowedCategories = new Set(["politics", "economy-public-money", "field-social", "culture-arts", "travel-tourism", "sports"]);
 
 function parseScalar(value) {
   const trimmed = value.trim();
@@ -65,6 +66,8 @@ function validatePost(post, file) {
   if (!post.title) throw new Error(`${file}: title is required`);
   if (!allowedStatuses.has(post.status)) throw new Error(`${file}: invalid status "${post.status}"`);
   if (!allowedSections.has(post.section)) throw new Error(`${file}: invalid section "${post.section}"`);
+  if (post.category !== undefined && post.category !== "" && !allowedCategories.has(post.category)) throw new Error(`${file}: invalid category "${post.category}"`);
+  if (post.status === "published" && !allowedCategories.has(post.category)) throw new Error(`${file}: published posts require a valid editorial category`);
   if (!post.date || !/^\d{4}-\d{2}-\d{2}(?:T.*)?$/.test(String(post.date))) throw new Error(`${file}: date must be YYYY-MM-DD or an ISO datetime`);
   if (post.reading_time !== undefined && (!Number.isInteger(post.reading_time) || post.reading_time < 1)) throw new Error(`${file}: reading_time must be an integer >= 1`);
   if (post.sources !== undefined && !Array.isArray(post.sources)) throw new Error(`${file}: sources must be a list`);

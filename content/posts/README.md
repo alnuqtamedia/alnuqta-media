@@ -7,3 +7,13 @@
 - `review` — قيد المراجعة
 - `ready` — جاهز للنشر
 - `published` — منشور
+
+الأقسام التحريرية المعتمدة في حقل `category`:
+- `politics` — السياسة
+- `economy-public-money` — الاقتصاد والمال العام
+- `field-social` — التحقيقات الميدانية والاجتماعية
+- `culture-arts` — ثقافة وفنون
+- `travel-tourism` — سياحة وسفر
+- `sports` — الرياضة
+
+يبقى حقل `section` مخصصاً لنوع المادة الصحفية مثل `investigation` أو `report` أو `news`، ولا يُستخدم بديلاً عن القسم التحريري. كل مادة بحالة `published` يجب أن تحتوي `category` صحيحاً.
