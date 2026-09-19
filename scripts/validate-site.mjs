@@ -10,6 +10,7 @@ const requiredFiles = [
   "admin/index.html",
   "data/posts.json",
   "public/data/posts.json",
+  "public/newsletter.js",
   "tina/config.ts",
   "robots.txt",
   "sitemap.xml",
@@ -54,6 +55,8 @@ if (!adminLogin.includes("../public/supabase-public-config.js") || !dashboard.in
 if (!dashboard.includes("owner_list_team") || !dashboard.includes("newsroom_team_directory")) throw new Error("Dashboard newsroom team integrations are missing");
 if (!dashboard.includes("source_submissions") || !dashboard.includes("source-submissions")) throw new Error("Dashboard source inbox integration is missing");
 if (!submit.includes("/functions/v1/source-submit") || !submit.includes('name="consent"')) throw new Error("Secure source submission integration is missing");
+if (!index.includes("newsletter-form") || !newsroom.includes("newsletter-form")) throw new Error("Newsletter signup must exist on homepage and newsroom");
+if (!dashboard.includes("newsletter_subscribers")) throw new Error("Dashboard newsletter subscriber integration is missing");
 
 const misleadingSecurityClaims = [
   "تشفير الاتصال وآلية حماية المصادر مفعلة",
