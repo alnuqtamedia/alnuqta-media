@@ -27,6 +27,19 @@ async function sha256(value: string) {
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+async function hasExpectedSignature(file: File): Promise<boolean> {
+  const bytes = new Uint8Array(await file.slice(0, 16).arrayBuffer());
+  const starts = (...signature: number[]) => signature.every((value, index) => bytes[index] === value);
+  if (file.type === "application/pdf") return starts(0x25, 0x50, 0x44, 0x46, 0x2d); // %PDF-
+  if (file.type === "image/jpeg") return starts(0xff, 0xd8, 0xff);
+  if (file.type === "image/png") return starts(0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a);
+  if (file.type === "image/webp") {
+    return starts(0x52, 0x49, 0x46, 0x46) &&
+      bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+  }
+  return false;
+}
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin") || "";
   if (!allowedOrigins.has(origin)) return response("https://alnuqtamedia.github.io", 403, { error: "origin_not_allowed" });
@@ -68,6 +81,9 @@ Deno.serve(async (req: Request) => {
       if (attachment.size > maxFileSize || !allowedTypes.has(attachment.type)) {
         return response(origin, 400, { error: "invalid_attachment" });
       }
+      if (!(await hasExpectedSignature(attachment))) {
+        return response(origin, 400, { error: "invalid_attachment_signature" });
+      }
       const extension = ({
         "application/pdf": "pdf",
         "image/jpeg": "jpg",
@@ -105,4 +121,3 @@ Deno.serve(async (req: Request) => {
     return response(origin, 500, { error: "submission_failed" });
   }
 });
-
