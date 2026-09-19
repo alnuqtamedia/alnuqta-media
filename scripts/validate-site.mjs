@@ -8,10 +8,9 @@ const requiredFiles = [
   "submit.html",
   "admin/dashboard.html",
   "admin/index.html",
-  "data/posts.json",
-  "public/data/posts.json",
   "public/newsletter.js",
-  "tina/config.ts",
+  "public/supabase-feed.js",
+  "public/newsroom-supabase.js",
   "robots.txt",
   "sitemap.xml",
   ".github/workflows/pages-deploy.yml",
@@ -27,24 +26,12 @@ const newsroom = fs.readFileSync(path.join(root, "newsroom.html"), "utf8");
 const submit = fs.readFileSync(path.join(root, "submit.html"), "utf8");
 const adminLogin = fs.readFileSync(path.join(root, "admin/index.html"), "utf8");
 const dashboard = fs.readFileSync(path.join(root, "admin/dashboard.html"), "utf8");
+const homepageInjector = fs.readFileSync(path.join(root, "scripts/inject-homepage-feed.mjs"), "utf8");
 const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
 const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
-const posts = JSON.parse(fs.readFileSync(path.join(root, "data/posts.json"), "utf8"));
-const publicPosts = JSON.parse(fs.readFileSync(path.join(root, "public/data/posts.json"), "utf8"));
-
-if (!Array.isArray(posts.posts)) throw new Error("data/posts.json: posts must be an array");
-if (JSON.stringify(posts) !== JSON.stringify(publicPosts)) {
-  throw new Error("Generated newsroom indexes are not identical");
-}
-
-for (const post of posts.posts) {
-  if (!post.slug || !post.title || !post.status) {
-    throw new Error("Every post needs slug, title and status");
-  }
-}
-
-if (!/published/.test(newsroom) || !/filter\s*\(/.test(newsroom)) {
-  throw new Error("newsroom.html must contain a publication-status filter for the public reader");
+if (!newsroom.includes("public/newsroom-supabase.js")) throw new Error("Newsroom must load the Supabase feed");
+if (!index.includes("public/supabase-feed.js") && !homepageInjector.includes("public/supabase-feed.js")) {
+  throw new Error("Homepage deployment must inject the Supabase feed");
 }
 
 if (!index.includes('rel="canonical"') || !newsroom.includes('rel="canonical"')) throw new Error("Public pages need canonical URLs");
@@ -74,4 +61,4 @@ for (const phrase of misleadingSecurityClaims) {
   }
 }
 
-console.log(`Site validation passed: ${posts.posts.length} content item(s), required files present, public index consistent.`);
+console.log("Site validation passed: Supabase is the newsroom source and required integrations are present.");

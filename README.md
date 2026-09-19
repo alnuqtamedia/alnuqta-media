@@ -9,8 +9,7 @@
 - `admin/index.html` و`admin/dashboard.html`: تسجيل الدخول ولوحة غرفة الأخبار.
 - `supabase/functions`: دوال Edge الخاصة بالموقع والاستوديو.
 - `supabase/migrations`: تغييرات قاعدة البيانات القابلة للتتبع.
-- `content/posts`: محتوى Git قديم؛ ليس المصدر التشغيلي الأساسي.
-- `tina/` وملفات Decap: أدوات قديمة معزولة عن لوحة Supabase.
+- `legacy-cms/`: توثيق عزل TinaCMS وDecap والمحتوى الثابت القديم.
 
 ## إعداد Supabase المحلي
 

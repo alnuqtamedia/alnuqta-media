@@ -30,9 +30,6 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build newsroom content
-        run: npm run build:content
-
       - name: Inject dynamic homepage feed
         run: node scripts/inject-homepage-feed.mjs
 
