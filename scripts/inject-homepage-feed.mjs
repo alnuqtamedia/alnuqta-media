@@ -8,10 +8,8 @@ const markers = [
   '<script src="public/homepage-navigation.js"></script>'
 ];
 const html = fs.readFileSync(file, 'utf8');
-const closingScript = '    </script>\n</body>';
-if (!html.includes(closingScript)) {
-  throw new Error('Could not find the homepage inline script boundary.');
-}
+const closingBody = '</body>';
+if (!html.includes(closingBody)) throw new Error('Could not find the homepage body boundary.');
 
 const missing = markers.filter((marker) => !html.includes(marker));
 if (!missing.length) {
@@ -19,8 +17,7 @@ if (!missing.length) {
   process.exit(0);
 }
 
-// External scripts must be placed AFTER the inline script closes.
 const scripts = missing.map((marker) => `    ${marker}`).join('\n');
-const updated = html.replace(closingScript, `    </script>\n${scripts}\n</body>`);
+const updated = html.replace(closingBody, `${scripts}\n</body>`);
 fs.writeFileSync(file, updated);
 console.log(`Injected ${missing.length} homepage script(s).`);
