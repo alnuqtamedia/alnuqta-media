@@ -40,6 +40,41 @@ async function hasExpectedSignature(file: File): Promise<boolean> {
   return false;
 }
 
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#039;",
+  })[character]!);
+}
+
+async function notifyNewsroom(subject: string, reference: string) {
+  const resendKey = Deno.env.get("RESEND_API_KEY");
+  const from = Deno.env.get("NEWSLETTER_FROM");
+  const to = Deno.env.get("SOURCE_ALERT_TO") || "alnuqtamedia@gmail.com";
+  if (!resendKey || !from) {
+    console.warn("source-submit: email alert skipped; RESEND_API_KEY or NEWSLETTER_FROM is missing");
+    return;
+  }
+
+  const mail = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Authorization": `Bearer ${resendKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      from,
+      to: [to],
+      subject: `رسالة جديدة لصندوق المصادر — ${reference}`,
+      html: `<div dir="rtl"><p>وصلت رسالة جديدة إلى صندوق مصادر النقطة.</p><p><strong>العنوان:</strong> ${escapeHtml(subject)}</p><p><strong>المرجع:</strong> ${reference}</p><p>راجعها من لوحة الإدارة. لا تُرسل تفاصيل المصدر أو المرفقات عبر البريد.</p></div>`,
+    }),
+  });
+  if (!mail.ok) console.error("source-submit: email alert failed", mail.status);
+}
+
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin") || "";
   if (!allowedOrigins.has(origin)) return response("https://alnuqtamedia.github.io", 403, { error: "origin_not_allowed" });
@@ -114,6 +149,8 @@ Deno.serve(async (req: Request) => {
       if (attachmentPath) await client.storage.from("source-submissions").remove([attachmentPath]);
       throw insertError;
     }
+
+    await notifyNewsroom(subject, id.slice(0, 8));
 
     return response(origin, 201, { ok: true, reference: id.slice(0, 8) });
   } catch (error) {
