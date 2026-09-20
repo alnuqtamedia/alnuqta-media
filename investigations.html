@@ -45,7 +45,7 @@
       if(!config.url||!config.anonKey){status.textContent='تعذر تحميل التحقيقات: إعداد الاتصال غير متوفر.';return;}
       const client=supabase.createClient(config.url,config.anonKey);
       const {data,error}=await client.from('articles')
-        .select('slug,title,subtitle,excerpt,cover_image_url,image,published_at,created_at,reading_time')
+        .select('id,title,subtitle,excerpt,cover_image_url,image,published_at,created_at,reading_time')
         .eq('status','published').eq('section','investigation')
         .order('published_at',{ascending:false,nullsFirst:false});
       if(error){status.textContent='تعذر تحميل التحقيقات حالياً.';return;}
@@ -53,7 +53,7 @@
       status.textContent=rows.length?`عدد التحقيقات المنشورة: ${rows.length}`:'لا توجد تحقيقات منشورة حالياً.';
       grid.innerHTML=rows.map(item=>{
         const cover=item.cover_image_url||item.image||'';
-        const url=`newsroom.html?slug=${encodeURIComponent(item.slug||'')}`;
+        const url=`newsroom.html?slug=${encodeURIComponent(item.id||'')}`;
         return `<article class="bg-[#122238] border border-slate-700 rounded-2xl overflow-hidden">
           ${cover?`<img src="${esc(cover)}" alt="${esc(item.title||'')}" class="w-full h-56 object-cover" loading="lazy">`:''}
           <div class="p-6"><span class="text-xs bg-red-600 px-3 py-1 rounded-full font-cairo font-bold">ملف استقصائي</span>
