@@ -19,6 +19,7 @@
     <div class="field"><label for="email">البريد الإلكتروني</label><input id="email" type="email" autocomplete="username" required></div>
     <div class="field"><label for="password">كلمة المرور</label><input id="password" type="password" autocomplete="current-password" required></div>
     <button type="submit">دخول إلى غرفة الأخبار</button>
+    <button type="button" id="resetPassword" style="margin-top:10px;background:transparent;border:1px solid var(--line)">نسيت كلمة المرور</button>
   </form>
   <div id="status" class="status" aria-live="polite"></div>
   <p class="note">الدخول مخصص لفريق النقطة، وتُطبّق الصلاحيات حسب حساب المستخدم.</p>
@@ -32,12 +33,11 @@ const SUPABASE_URL = config.url || '';
 const SUPABASE_ANON_KEY = config.anonKey || '';
 const form = document.getElementById('loginForm');
 const status = document.getElementById('status');
+const client = SUPABASE_URL && SUPABASE_ANON_KEY ? supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   status.textContent = 'جاري تسجيل الدخول…';
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { status.textContent = 'إعداد الاتصال غير متاح حاليًا. أعد تحميل الصفحة.'; return; }
-  const { createClient } = supabase;
-  const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   const { data, error } = await client.auth.signInWithPassword({
     email: document.getElementById('email').value.trim(),
     password: document.getElementById('password').value
@@ -45,6 +45,15 @@ form.addEventListener('submit', async (event) => {
   if (error) { status.textContent = error.message || 'تعذر تسجيل الدخول.'; return; }
   if (!data.session) { status.textContent = 'لم يتم إنشاء جلسة تسجيل دخول.'; return; }
   window.location.href = './dashboard.html';
+});
+document.getElementById('resetPassword').addEventListener('click', async () => {
+  const email = document.getElementById('email').value.trim();
+  if (!email) { status.textContent = 'اكتب بريدك الإلكتروني أولاً.'; return; }
+  if (!client) { status.textContent = 'إعداد الاتصال غير متاح حاليًا.'; return; }
+  status.textContent = 'جاري إرسال رابط الاستعادة…';
+  const redirectTo = new URL('./reset-password.html', window.location.href).href;
+  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+  status.textContent = error ? (error.message || 'تعذر إرسال رابط الاستعادة.') : 'إذا كان البريد مسجلاً، ستصلك رسالة الاستعادة. افحص البريد غير المرغوب أيضاً.';
 });
 </script>
 </body>
