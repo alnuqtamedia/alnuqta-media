@@ -1,46 +1,39 @@
-name: Validate newsroom content
+name: Validate site
 
 on:
   workflow_dispatch:
   pull_request:
     paths:
-      - "content/posts/**"
-      - "scripts/build-content.mjs"
-      - "scripts/validate-site.mjs"
+      - "**.html"
+      - "public/**"
+      - "scripts/**"
+      - "supabase/functions/**"
+      - "supabase/migrations/**"
       - "package.json"
-      - "index.html"
-      - "newsroom.html"
-      - "admin/**"
-      - "data/posts.json"
-      - "public/data/posts.json"
-      - "tina/config.ts"
+      - "package-lock.json"
       - ".github/workflows/content-build.yml"
   push:
     branches:
       - main
-      - feature/newsroom-cms-schema
     paths:
-      - "content/posts/**"
-      - "scripts/build-content.mjs"
-      - "scripts/validate-site.mjs"
+      - "**.html"
+      - "public/**"
+      - "scripts/**"
+      - "supabase/functions/**"
+      - "supabase/migrations/**"
       - "package.json"
-      - "index.html"
-      - "newsroom.html"
-      - "admin/**"
-      - "data/posts.json"
-      - "public/data/posts.json"
-      - "tina/config.ts"
+      - "package-lock.json"
       - ".github/workflows/content-build.yml"
 
 permissions:
   contents: read
 
 concurrency:
-  group: newsroom-content-${{ github.workflow }}-${{ github.ref }}
+  group: site-validation-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-content:
+  validate:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -51,28 +44,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
 
-      - name: Build newsroom index
-        run: npm run build:content
+      - name: Install dependencies
+        run: npm ci
 
-      - name: Validate generated JSON
-        run: |
-          node <<'NODE'
-          const fs = require('fs');
-          for (const file of ['data/posts.json', 'public/data/posts.json']) {
-            const data = JSON.parse(fs.readFileSync(file, 'utf8'));
-            if (!Array.isArray(data.posts)) throw new Error(`${file}: posts must be an array`);
-            for (const post of data.posts) {
-              if (!post.slug || !post.title || !post.status) {
-                throw new Error(`${file}: post missing slug/title/status`);
-              }
-            }
-            console.log(`${file}: ${data.posts.length} post(s)`);
-          }
-          NODE
-
-      - name: Verify generated files are identical
-        run: cmp --silent data/posts.json public/data/posts.json
-
-      - name: Validate site surfaces and security wording
-        run: npm run validate:site
+      - name: Lint and validate site
+        run: npm test
