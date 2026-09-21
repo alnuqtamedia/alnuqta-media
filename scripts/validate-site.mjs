@@ -13,6 +13,11 @@ const requiredFiles = [
   "public/newsroom-supabase.js",
   "robots.txt",
   "sitemap.xml",
+  "privacy.html",
+  "editorial-policy.html",
+  "corrections.html",
+  "contact.html",
+  "public/policy.css",
   ".github/workflows/pages-deploy.yml",
 ];
 
@@ -29,6 +34,10 @@ const dashboard = fs.readFileSync(path.join(root, "admin/dashboard.html"), "utf8
 const homepageInjector = fs.readFileSync(path.join(root, "scripts/inject-homepage-feed.mjs"), "utf8");
 const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
 const sitemap = fs.readFileSync(path.join(root, "sitemap.xml"), "utf8");
+const privacy = fs.readFileSync(path.join(root, "privacy.html"), "utf8");
+const editorialPolicy = fs.readFileSync(path.join(root, "editorial-policy.html"), "utf8");
+const corrections = fs.readFileSync(path.join(root, "corrections.html"), "utf8");
+const contact = fs.readFileSync(path.join(root, "contact.html"), "utf8");
 if (!newsroom.includes("public/newsroom-supabase.js")) throw new Error("Newsroom must load the Supabase feed");
 if (!index.includes("public/supabase-feed.js") && !homepageInjector.includes("public/supabase-feed.js")) {
   throw new Error("Homepage deployment must inject the Supabase feed");
@@ -37,6 +46,19 @@ if (!index.includes("public/supabase-feed.js") && !homepageInjector.includes("pu
 if (!index.includes('rel="canonical"') || !newsroom.includes('rel="canonical"')) throw new Error("Public pages need canonical URLs");
 if (!robots.includes("sitemap.xml")) throw new Error("robots.txt must reference sitemap.xml");
 if (!sitemap.includes("newsroom.html") || !sitemap.includes("alnuqtamedia.github.io/alnuqta-media/")) throw new Error("sitemap.xml is missing core public URLs");
+for (const page of ["privacy.html", "editorial-policy.html", "corrections.html", "contact.html"]) {
+  if (!sitemap.includes(page)) throw new Error(`sitemap.xml is missing policy page: ${page}`);
+  if (!index.includes(`href="${page}"`)) throw new Error(`Homepage footer is missing policy page: ${page}`);
+}
+if (!privacy.includes("180 يوماً") || !privacy.includes("ليست SecureDrop") || !privacy.includes("لا نبيع البيانات")) {
+  throw new Error("Privacy policy must disclose source retention, anonymity limits and data-sale policy.");
+}
+if (!editorialPolicy.includes("حق الرد") || !editorialPolicy.includes("الذكاء الاصطناعي")) {
+  throw new Error("Editorial policy must cover right of reply and AI-generated media.");
+}
+if (!corrections.includes("طلب تصحيح") || !contact.includes("alnuqtamedia@gmail.com")) {
+  throw new Error("Corrections and public contact routes are incomplete.");
+}
 if (/href=["'][^"']*admin\/?["']/.test(index)) throw new Error("Public homepage must not expose the private admin login link");
 if (!adminLogin.includes("../public/supabase-public-config.js") || !dashboard.includes("../public/supabase-public-config.js")) throw new Error("Admin pages must load Supabase runtime config");
 if (!dashboard.includes("owner_list_team") || !dashboard.includes("newsroom_team_directory")) throw new Error("Dashboard newsroom team integrations are missing");
