@@ -50,15 +50,18 @@
   };
 
   const render = (posts) => {
-    const headings = [...document.querySelectorAll('#section-home h2')];
-    const heading = headings.find((el) => el.textContent.includes('أحدث التحقيقات الاستقصائية'));
-    const section = heading?.closest('section');
-    const grid = section?.querySelector('.grid');
-    if (!grid || !posts.length) return;
+    const grid = document.getElementById('homepage-feed');
+    const hero = document.getElementById('homepage-featured');
+    if (!grid || !hero) return;
+    if (!posts.length) {
+      grid.innerHTML = '<div class="md:col-span-2 lg:col-span-3 bg-navy-card border border-navy-light rounded-xl p-8 text-center"><h3 class="font-cairo font-bold text-lg">لا توجد مواد منشورة حالياً</h3><p class="text-gray-300 mt-2">تظهر المواد هنا تلقائياً بعد اعتمادها ونشرها من غرفة الأخبار.</p></div>';
+      return;
+    }
     const featured = posts[0];
-    const rest = posts.slice(1, 7);
-    const featuredHtml = `<article class="md:col-span-2 bg-navy-card border border-brandRed/40 rounded-xl overflow-hidden shadow-xl group"><a href="newsroom.html?slug=${encodeURIComponent(featured.slug)}" class="grid md:grid-cols-2"><div>${featured.cover_image_url||featured.image||featured.gallery?.[0]?.url?`<img src="${escapeHtml(featured.cover_image_url||featured.image||featured.gallery?.[0]?.url)}" alt="${escapeHtml(featured.title)}" class="w-full h-full min-h-64 object-cover" loading="eager">`:''}</div><div class="p-6 flex flex-col justify-center"><span class="text-red-300 text-xs font-bold">الأحدث · ${escapeHtml(labels[featured.section]||'مادة صحفية')}</span><h3 class="font-cairo font-extrabold text-2xl text-white mt-3 group-hover:text-red-400 transition">${escapeHtml(featured.title)}</h3><p class="text-gray-200 mt-3 leading-relaxed">${escapeHtml(featured.excerpt||featured.subtitle||'')}</p><div class="text-xs text-gray-300 mt-5">${formatDate(featured.published_at||featured.created_at)}</div></div></a></article>`;
-    grid.innerHTML = featuredHtml + rest.map(card).join('');
+    const rest = posts.slice(0, 6);
+    const cover = featured.cover_image_url || featured.image || featured.gallery?.[0]?.url || '';
+    hero.innerHTML = `<div class="grid lg:grid-cols-2 gap-8 items-center"><div><p class="text-red-400 font-cairo font-bold text-sm">الأحدث · ${escapeHtml(labels[featured.section] || 'مادة صحفية')}</p><h1 class="font-cairo font-black text-3xl sm:text-5xl mt-3 leading-tight">${escapeHtml(featured.title)}</h1><p class="text-gray-300 mt-5 leading-8">${escapeHtml(featured.excerpt || featured.subtitle || 'مادة منشورة من غرفة أخبار النقطة.')}</p><div class="flex flex-wrap gap-4 items-center mt-7"><a href="newsroom.html?slug=${encodeURIComponent(featured.slug)}" class="inline-flex items-center gap-2 bg-brandRed hover:bg-brandRed-hover px-6 py-3 rounded-lg font-cairo font-bold">قراءة المادة <i data-lucide="arrow-left" class="w-4 h-4"></i></a><span class="text-sm text-gray-400">${formatDate(featured.published_at || featured.created_at)}</span></div></div>${cover ? `<img src="${escapeHtml(cover)}" alt="${escapeHtml(featured.image_alt || featured.title)}" class="w-full h-72 lg:h-96 object-cover rounded-xl" loading="eager">` : ''}</div>`;
+    grid.innerHTML = rest.map(card).join('');
     if (window.lucide) window.lucide.createIcons();
   };
 
@@ -79,5 +82,9 @@
       }));
       render(posts);
     })
-    .catch((error) => console.warn('Supabase public feed unavailable; keeping static newsroom feed.', error));
+    .catch((error) => {
+      const grid = document.getElementById('homepage-feed');
+      if (grid) grid.innerHTML = '<div class="md:col-span-2 lg:col-span-3 bg-navy-card border border-red-500/30 rounded-xl p-8 text-center"><h3 class="font-cairo font-bold">تعذر تحميل المواد الآن</h3><p class="text-gray-300 mt-2">يمكنك متابعة المواد المنشورة من غرفة الأخبار والمحاولة لاحقاً.</p><a href="newsroom.html" class="inline-block text-red-400 mt-4 hover:underline">فتح غرفة الأخبار</a></div>';
+      console.warn('Supabase public feed unavailable.', error);
+    });
 })();

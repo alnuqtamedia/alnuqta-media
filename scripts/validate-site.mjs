@@ -55,6 +55,25 @@ const misleadingSecurityClaims = [
   "إرسال تسريب آمن",
 ];
 
+const retiredHomepageContent = [
+  'data-netlify="true"',
+  'handleTipSubmit',
+  'openInvestigationModal',
+  'مفحوص وموثق',
+  'شركات الوهم',
+  'جفاف الأهوار',
+];
+
+for (const phrase of retiredHomepageContent) {
+  if (index.includes(phrase)) {
+    throw new Error(`Retired or unverified homepage content returned: ${phrase}`);
+  }
+}
+
+if (!index.includes('id="homepage-feed"') || !index.includes('public/supabase-feed.js')) {
+  throw new Error('Homepage must render its published content from Supabase.');
+}
+
 for (const phrase of misleadingSecurityClaims) {
   if (index.includes(phrase) || submit.includes(phrase)) {
     throw new Error(`Unsafe/unverified security claim remains in a public page: ${phrase}`);
