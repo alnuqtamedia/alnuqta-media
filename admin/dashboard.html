@@ -21,7 +21,7 @@
 <section id="teamPanel" class="card" style="display:none">
 <h2>إدارة الفريق</h2>
 <p class="muted">هذا القسم مخصص للـOwner. يعرض أعضاء الفريق الحاليين، وتجهيز إضافة الحسابات الجديدة سيكون عبر وظيفة خادمية آمنة بدون وضع service_role داخل الموقع.</p>
-<form id="teamForm" class="subcard"><h3>إضافة عضو جديد</h3><div class="team-grid"><div class="field"><label>الاسم</label><input id="teamName" required></div><div class="field"><label>الإيميل</label><input id="teamEmail" type="email" required></div><div class="field"><label>الدور</label><select id="teamRole"><option value="writer">كاتب</option><option value="editor">محرر</option><option value="designer">مصمم</option><option value="photographer">مصور</option><option value="videographer">مصور فيديو</option><option value="owner">Owner</option></select></div><div class="field"><label>كلمة مرور مؤقتة</label><input id="teamPassword" type="password" minlength="8" required autocomplete="new-password"></div></div><div class="actions"><button type="submit">إنشاء الحساب</button></div><p class="hint">أرسل كلمة المرور المؤقتة للعضو بطريقة خاصة واطلب منه تغييرها بعد الدخول.</p></form><div id="teamStatus" class="status"></div>
+<form id="teamForm" class="subcard"><h3>إضافة عضو جديد</h3><div class="team-grid"><div class="field"><label>الاسم</label><input id="teamName" required></div><div class="field"><label>الإيميل</label><input id="teamEmail" type="email" required></div><div class="field"><label>الدور</label><select id="teamRole"><option value="writer">كاتب</option><option value="editor">محرر</option><option value="designer">مصمم</option><option value="photographer">مصور</option><option value="videographer">مصور فيديو</option><option value="owner">Owner</option></select></div><div class="field"><label>كلمة مرور مؤقتة</label><input id="teamPassword" type="password" minlength="12" required autocomplete="new-password"></div></div><div class="actions"><button type="submit">إنشاء الحساب</button></div><p class="hint">استخدم كلمة مرور عشوائية من 12 حرفاً على الأقل، وأرسلها للعضو بطريقة خاصة.</p></form><div id="teamStatus" class="status"></div>
 <div id="teamMembers" class="list"></div>
 </section>
 <div class="grid">
@@ -73,9 +73,8 @@ async function unsubscribeNewsletter(id){if(!confirm('إلغاء اشتراك ه
 async function loadAuditLogs(){if(currentProfile?.role!=='owner')return;const state=$('auditStatus'),box=$('auditLogs');state.textContent='جاري تحميل سجل التدقيق…';const {data,error}=await client.from('audit_logs').select('id,user_id,article_id,action,created_at').order('created_at',{ascending:false}).limit(200);if(error){state.textContent='تعذر تحميل سجل التدقيق: '+error.message;box.innerHTML='';return}const rows=data||[],articleNames=new Map(articles.map(item=>[item.id,item.title])),memberNames=new Map(teamDirectory.map(item=>[item.id,item.full_name||item.email]));state.textContent=rows.length?`آخر ${rows.length} عملية`:'لا توجد عمليات مسجلة.';box.innerHTML=rows.map(item=>`<article class="item"><strong>${esc(item.action)}</strong><div class="meta"><span>${esc(articleNames.get(item.article_id)||item.article_id||'مادة محذوفة')}</span><span>${esc(memberNames.get(item.user_id)||item.user_id||'النظام')}</span><span>${new Date(item.created_at).toLocaleString('ar-IQ')}</span></div></article>`).join('')}
 async function loadTeamDirectory(){
   try{
-    const {data,error}=await client.rpc('newsroom_team_directory');
-    if(error)throw error;
-    teamDirectory=Array.isArray(data)?data:[];
+    const out=await callManageTeam({action:'directory'});
+    teamDirectory=Array.isArray(out.members)?out.members:[];
     const fields={writerId:['writer','editor','owner'],editorId:['editor','owner'],photographerId:['photographer'],videographerId:['videographer'],designerId:['designer']};
     Object.entries(fields).forEach(([id,roles])=>{
       const el=$(id); if(!el)return;
@@ -93,9 +92,8 @@ async function loadTeam(){
   const box=$('teamMembers'),state=$('teamStatus');
   state.textContent='جاري تحميل الفريق…';
   try{
-    const {data,error}=await client.rpc('owner_list_team');
-    if(error)throw error;
-    const members=Array.isArray(data)?data:[];
+    const out=await callManageTeam({action:'list'});
+    const members=Array.isArray(out.members)?out.members:[];
     state.textContent=members.length?`عدد أعضاء الفريق: ${members.length}`:'لا يوجد أعضاء.';
     box.innerHTML=members.map(p=>`<div class="item"><div class="item-head"><div><strong>${esc(p.full_name||p.email||'عضو فريق')}</strong><div class="meta"><span>${esc(p.email||'')}</span><span>${esc(labels[p.role]||p.role||'بدون ملف صلاحيات')}</span><span>${p.active?'نشط':'معطّل'}</span></div></div></div>${p.id!==currentUser.id?`<div class="item-actions"><select data-team-role="${p.id}" style="max-width:180px"><option value="writer" ${p.role==='writer'?'selected':''}>كاتب</option><option value="editor" ${p.role==='editor'?'selected':''}>محرر</option><option value="designer" ${p.role==='designer'?'selected':''}>مصمم</option><option value="photographer" ${p.role==='photographer'?'selected':''}>مصور</option><option value="videographer" ${p.role==='videographer'?'selected':''}>مصور فيديو</option><option value="owner" ${p.role==='owner'?'selected':''}>Owner</option></select><button type="button" class="ghost" data-team-save="${p.id}">حفظ الدور</button>${p.active?`<button type="button" class="ghost" data-team-disable="${p.id}">تعطيل الحساب</button>`:`<button type="button" class="ghost" data-team-enable="${p.id}">إعادة التفعيل</button>`}</div>`:'<div class="meta"><span>حسابك الحالي</span></div>'}</div>`).join('');
     document.querySelectorAll('[data-team-save]').forEach(b=>b.onclick=()=>changeTeamRole(b.dataset.teamSave));
@@ -105,6 +103,14 @@ async function loadTeam(){
     state.textContent='تعذر تحميل الفريق: '+(error?.message||String(error));
     box.innerHTML='';
   }
+}
+async function callManageTeam(payload){
+  const {data:{session}}=await client.auth.getSession();
+  if(!session)throw new Error('انتهت جلسة الدخول.');
+  const res=await fetch(SUPABASE_URL+'/functions/v1/manage-team',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':key},body:JSON.stringify(payload)});
+  const out=await res.json();
+  if(!res.ok||!out.ok)throw new Error(out.error||'تعذر تنفيذ طلب إدارة الفريق.');
+  return out;
 }
 async function setTeamAccess(id,action){if(currentProfile?.role!=='owner')return;const state=$('teamStatus');if(action==='disable'&&!confirm('تعطيل دخول هذا العضو؟ ستبقى مواده وبياناته محفوظة.'))return;state.textContent=action==='disable'?'جاري تعطيل الحساب…':'جاري إعادة تفعيل الحساب…';const {data:{session}}=await client.auth.getSession();if(!session){state.textContent='انتهت جلسة الدخول.';return}try{const res=await fetch(SUPABASE_URL+'/functions/v1/manage-team',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':key},body:JSON.stringify({action,user_id:id})});const out=await res.json();if(!res.ok||!out.ok)throw new Error(out.error||'تعذر تحديث حالة الحساب.');state.textContent=action==='disable'?'تم تعطيل دخول العضو مع الاحتفاظ بمواده.':'تمت إعادة تفعيل حساب العضو.';await loadTeam()}catch(error){state.textContent='تعذر تحديث الحساب: '+(error?.message||String(error))}}
 async function changeTeamRole(id){const state=$('teamStatus'),select=document.querySelector(`[data-team-role="${id}"]`);if(!select)return;state.textContent='جاري تحديث الدور…';const {data:{session}}=await client.auth.getSession();try{const res=await fetch(SUPABASE_URL+'/functions/v1/manage-team',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+session.access_token,'apikey':key},body:JSON.stringify({action:'role',user_id:id,role:select.value})});const out=await res.json();if(!res.ok||!out.ok)throw new Error(out.error||'تعذر تحديث الدور.');state.textContent='تم تحديث صلاحية العضو.';await loadTeam()}catch(error){state.textContent='تعذر تحديث الدور: '+(error?.message||String(error))}}
