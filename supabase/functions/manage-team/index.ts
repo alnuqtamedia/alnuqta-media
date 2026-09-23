@@ -1,11 +1,29 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+const allowedOrigins = new Set([
+  'https://alnuqtamedia.github.io',
+  'http://localhost:3000',
+  'http://127.0.0.1:3000',
+])
+
+function responseHeaders(req: Request) {
+  const origin = req.headers.get('origin') || ''
+  return {
+    ...(allowedOrigins.has(origin) ? { 'Access-Control-Allow-Origin': origin } : {}),
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Vary': 'Origin',
+  }
 }
 
 Deno.serve(async (req) => {
+  const corsHeaders = responseHeaders(req)
+  const origin = req.headers.get('origin') || ''
+  if (origin && !allowedOrigins.has(origin)) {
+    return new Response(JSON.stringify({ ok: false, error: 'Origin not allowed.' }), {
+      status: 403,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    })
+  }
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
   try {
     const url = Deno.env.get('SUPABASE_URL')!
@@ -18,12 +36,30 @@ Deno.serve(async (req) => {
     if (userError || !user) throw new Error('غير مصرح.')
 
     const admin = createClient(url, service)
-    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
-    if (profile?.role !== 'owner') throw new Error('هذه العملية متاحة للـOwner فقط.')
-
     const body = await req.json()
     const action = String(body.action || 'create')
     const targetId = String(body.user_id || '')
+    const { data: profile } = await admin.from('profiles').select('role').eq('id', user.id).single()
+    const newsroomRoles = ['owner','editor','writer','designer','photographer','videographer']
+    if (!profile || !newsroomRoles.includes(profile.role)) throw new Error('غير مصرح.')
+
+    if (action === 'directory') {
+      const { data: authData, error: authError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
+      if (authError) throw authError
+      const activeIds = (authData.users || [])
+        .filter((u) => !u.banned_until || new Date(u.banned_until).getTime() <= Date.now())
+        .map((u) => u.id)
+      if (!activeIds.length) {
+        return new Response(JSON.stringify({ ok: true, members: [] }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+      }
+      const { data, error } = await admin.from('profiles').select('id,full_name,role').in('id', activeIds)
+      if (error) throw error
+      const members = (data || []).filter((member) => newsroomRoles.includes(member.role))
+      return new Response(JSON.stringify({ ok: true, members }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } })
+    }
+
+    if (profile.role !== 'owner') throw new Error('هذه العملية متاحة للـOwner فقط.')
+
     if (action === 'list') {
       const { data: authData, error: authError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
       if (authError) throw authError
@@ -63,7 +99,7 @@ Deno.serve(async (req) => {
     const email = String(body.email || '').trim().toLowerCase()
     const password = String(body.password || '')
     const role = String(body.role || 'writer')
-    if (!fullName || !email || password.length < 8) throw new Error('الاسم والإيميل وكلمة مرور من 8 أحرف مطلوبة.')
+    if (!fullName || !email || password.length < 12) throw new Error('الاسم والإيميل وكلمة مرور من 12 حرفاً على الأقل مطلوبة.')
     if (!['owner','editor','writer','designer','photographer','videographer'].includes(role)) throw new Error('الدور غير صالح.')
 
     const { data: created, error: createError } = await admin.auth.admin.createUser({
