@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>المصادقة الثنائية — النقطة</title>
+  <style>
+    :root{--bg:#071426;--panel:#0d2038;--line:#28415e;--text:#fff;--muted:#b9c7d8;--red:#ef3340;--ok:#59d39a}
+    *{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Arial,sans-serif;min-height:100vh;display:grid;place-items:center;padding:24px}main{width:min(620px,100%);background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:30px}.brand{color:var(--red);font-weight:800}.muted{color:var(--muted);line-height:1.8}.field{display:grid;gap:8px;margin:16px 0}input{width:100%;padding:14px;border-radius:12px;border:1px solid var(--line);background:#09192c;color:#fff;font-size:18px;letter-spacing:3px;text-align:center}button,.btn{border:0;border-radius:12px;padding:13px 18px;background:var(--red);color:#fff;font-weight:800;cursor:pointer;text-decoration:none;display:inline-block}.ghost{background:transparent;border:1px solid var(--line)}.actions{display:flex;gap:10px;flex-wrap:wrap}.status{min-height:24px;margin:14px 0;color:#ffd6d9}.ok{color:var(--ok)}#qr{display:none;background:#fff;border-radius:14px;padding:12px;max-width:230px;width:100%;margin:16px auto}.secret{direction:ltr;word-break:break-all;background:#09192c;border:1px solid var(--line);padding:12px;border-radius:10px;text-align:center}
+  </style>
+</head>
+<body><main>
+  <div class="brand">النقطة — غرفة الأخبار</div><h1>المصادقة الثنائية</h1>
+  <p class="muted">استخدم تطبيق مصادقة مثل Google Authenticator أو Microsoft Authenticator. لا ترسل الرمز أو المفتاح السري لأي شخص.</p>
+  <div id="status" class="status" aria-live="polite">جاري فحص الحساب…</div>
+  <section id="challenge" hidden><h2>أدخل رمز المصادقة</h2><div class="field"><input id="challengeCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="000000"></div><button id="verifyChallenge" type="button">تحقق وادخل</button></section>
+  <section id="enroll" hidden><h2>إضافة تطبيق مصادقة</h2><button id="startEnroll" type="button">إنشاء رمز QR</button><img id="qr" alt="رمز QR لإضافة المصادقة الثنائية"><p id="secretWrap" class="muted" hidden>إذا تعذر مسح QR، أدخل هذا المفتاح يدوياً:</p><div id="secret" class="secret" hidden></div><div id="enrollVerify" hidden><div class="field"><input id="enrollCode" inputmode="numeric" autocomplete="one-time-code" maxlength="8" placeholder="000000"></div><button id="verifyEnroll" type="button">تفعيل المصادقة الثنائية</button></div></section>
+  <div class="actions" style="margin-top:22px"><a class="btn ghost" href="./dashboard.html">العودة إلى اللوحة</a><button id="logout" class="ghost" type="button">تسجيل الخروج</button></div>
+</main>
+<script src="../public/supabase-public-config.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const config=window.ALNUQTA_SUPABASE_PUBLIC||{},status=document.getElementById('status');if(!config.url||!config.anonKey)location.href='./index.html';
+const client=supabase.createClient(config.url,config.anonKey);let verifiedFactor=null,enrollFactor=null;
+const next=()=>{location.href='./dashboard.html'};
+async function init(){const {data:{session}}=await client.auth.getSession();if(!session){location.href='./index.html';return}const {data:factors,error}=await client.auth.mfa.listFactors();if(error){status.textContent=error.message;return}verifiedFactor=(factors.totp||[]).find(x=>x.status==='verified')||null;const {data:aal,error:aalError}=await client.auth.mfa.getAuthenticatorAssuranceLevel();if(aalError){status.textContent=aalError.message;return}if(verifiedFactor&&aal.currentLevel!=='aal2'){status.textContent='الحساب محمي. أدخل الرمز لإكمال الدخول.';document.getElementById('challenge').hidden=false;return}status.textContent=verifiedFactor?'الجلسة الحالية محمية بالمصادقة الثنائية. يمكنك إضافة عامل احتياطي ثانٍ.':'لم تُفعّل المصادقة الثنائية لهذا الحساب بعد.';status.className='status ok';document.getElementById('enroll').hidden=false}
+document.getElementById('verifyChallenge').onclick=async()=>{const code=document.getElementById('challengeCode').value.trim();status.textContent='جاري التحقق…';const {error}=await client.auth.mfa.challengeAndVerify({factorId:verifiedFactor.id,code});if(error){status.textContent='الرمز غير صحيح أو انتهت صلاحيته.';return}status.textContent='تم التحقق بنجاح.';status.className='status ok';next()};
+document.getElementById('startEnroll').onclick=async()=>{status.textContent='جاري إنشاء رمز الإعداد…';const {data,error}=await client.auth.mfa.enroll({factorType:'totp',friendlyName:'Alnuqta Newsroom'});if(error){status.textContent=error.message;return}enrollFactor=data;const qr=document.getElementById('qr');qr.src=data.totp.qr_code;qr.style.display='block';document.getElementById('secret').textContent=data.totp.secret;document.getElementById('secret').hidden=false;document.getElementById('secretWrap').hidden=false;document.getElementById('enrollVerify').hidden=false;document.getElementById('startEnroll').hidden=true;status.textContent='امسح QR ثم أدخل الرمز الظاهر في التطبيق.'};
+document.getElementById('verifyEnroll').onclick=async()=>{const code=document.getElementById('enrollCode').value.trim();status.textContent='جاري التفعيل…';const {data:challenge,error:challengeError}=await client.auth.mfa.challenge({factorId:enrollFactor.id});if(challengeError){status.textContent=challengeError.message;return}const {error}=await client.auth.mfa.verify({factorId:enrollFactor.id,challengeId:challenge.id,code});if(error){status.textContent='تعذر التفعيل: تحقق من الرمز وحاول مجدداً.';return}status.textContent='تم تفعيل المصادقة الثنائية بنجاح.';status.className='status ok';setTimeout(next,800)};
+document.getElementById('logout').onclick=async()=>{await client.auth.signOut();location.href='./index.html'};init();
+</script></body></html>
