@@ -44,7 +44,11 @@ form.addEventListener('submit', async (event) => {
   });
   if (error) { status.textContent = error.message || 'تعذر تسجيل الدخول.'; return; }
   if (!data.session) { status.textContent = 'لم يتم إنشاء جلسة تسجيل دخول.'; return; }
-  window.location.href = './dashboard.html';
+  const { data: aal, error: aalError } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (aalError) { status.textContent = 'تم الدخول، لكن تعذر فحص المصادقة الثنائية.'; return; }
+  window.location.href = aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2'
+    ? './mfa.html?next=dashboard.html'
+    : './dashboard.html';
 });
 document.getElementById('resetPassword').addEventListener('click', async () => {
   const email = document.getElementById('email').value.trim();
