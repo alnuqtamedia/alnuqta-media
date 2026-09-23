@@ -8,6 +8,7 @@ const requiredFiles = [
   "submit.html",
   "admin/dashboard.html",
   "admin/index.html",
+  "admin/mfa.html",
   "public/newsletter.js",
   "public/supabase-feed.js",
   "public/newsroom-supabase.js",
@@ -30,6 +31,7 @@ const index = fs.readFileSync(path.join(root, "index.html"), "utf8");
 const newsroom = fs.readFileSync(path.join(root, "newsroom.html"), "utf8");
 const submit = fs.readFileSync(path.join(root, "submit.html"), "utf8");
 const adminLogin = fs.readFileSync(path.join(root, "admin/index.html"), "utf8");
+const adminMfa = fs.readFileSync(path.join(root, "admin/mfa.html"), "utf8");
 const dashboard = fs.readFileSync(path.join(root, "admin/dashboard.html"), "utf8");
 const homepageInjector = fs.readFileSync(path.join(root, "scripts/inject-homepage-feed.mjs"), "utf8");
 const robots = fs.readFileSync(path.join(root, "robots.txt"), "utf8");
@@ -61,6 +63,7 @@ if (!corrections.includes("طلب تصحيح") || !contact.includes("alnuqtamedi
 }
 if (/href=["'][^"']*admin\/?["']/.test(index)) throw new Error("Public homepage must not expose the private admin login link");
 if (!adminLogin.includes("../public/supabase-public-config.js") || !dashboard.includes("../public/supabase-public-config.js")) throw new Error("Admin pages must load Supabase runtime config");
+if (!adminLogin.includes("getAuthenticatorAssuranceLevel") || !adminMfa.includes("challengeAndVerify") || !adminMfa.includes("mfa.enroll")) throw new Error("Admin MFA flow is incomplete");
 if (!dashboard.includes("callManageTeam({action:'directory'})") || !dashboard.includes("callManageTeam({action:'list'})")) {
   throw new Error("Dashboard secure newsroom team integrations are missing");
 }
