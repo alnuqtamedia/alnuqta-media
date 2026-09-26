@@ -15,6 +15,19 @@ function responseHeaders(req: Request) {
   }
 }
 
+function accessTokenAal(authHeader: string) {
+  try {
+    const token = authHeader.replace(/^Bearer\s+/i, '')
+    const encoded = token.split('.')[1]
+    if (!encoded) return ''
+    const normalized = encoded.replace(/-/g, '+').replace(/_/g, '/')
+    const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=')
+    return String(JSON.parse(atob(padded)).aal || '')
+  } catch {
+    return ''
+  }
+}
+
 Deno.serve(async (req) => {
   const corsHeaders = responseHeaders(req)
   const origin = req.headers.get('origin') || ''
@@ -59,6 +72,19 @@ Deno.serve(async (req) => {
     }
 
     if (profile.role !== 'owner') throw new Error('هذه العملية متاحة للـOwner فقط.')
+
+    // getUser() above verifies the bearer token with Supabase Auth. Only after
+    // that verification do we trust its AAL claim for privileged team actions.
+    if (accessTokenAal(authHeader) !== 'aal2') {
+      return new Response(JSON.stringify({
+        ok: false,
+        code: 'mfa_required',
+        error: 'تتطلب إدارة الفريق التحقق بالمصادقة الثنائية.',
+      }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      })
+    }
 
     if (action === 'list') {
       const { data: authData, error: authError } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 })
