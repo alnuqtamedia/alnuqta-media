@@ -14,7 +14,7 @@
   const categoryLabel = post => categories.find(([id])=>id===categoryKey(post))?.[1] || types[post.section] || 'مادة صحفية';
   const cover = post => post.cover_image_url || post.image || post.gallery?.[0]?.url || '';
   const articleUrl = post => `newsroom.html?slug=${encodeURIComponent(post.slug||post.id||'')}`;
-  const latestSection = () => [...document.querySelectorAll('#section-home section')].find(section=>section.querySelector('h2')?.textContent.includes('أحدث التحقيقات الاستقصائية'));
+  const latestSection = () => document.getElementById('homepage-feed')?.closest('section') || [...document.querySelectorAll('#section-home section')].find(section=>section.querySelector('h2')?.textContent.includes('أحدث المواد'));
 
   function placeholder(post,extra='') {
     return `<div class="${extra} bg-gradient-to-br from-navy-light via-navy to-navy-dark grid place-items-center p-8 text-center"><div><div class="mx-auto w-14 h-14 rounded-full bg-brandRed flex items-center justify-center text-4xl font-black">.</div><p class="mt-4 text-sm text-gray-300">${esc(categoryLabel(post))}</p></div></div>`;
