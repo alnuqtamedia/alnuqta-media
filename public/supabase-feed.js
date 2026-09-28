@@ -6,7 +6,7 @@
   const categories = [
     ['politics','السياسة'], ['economy-public-money','الاقتصاد والمال العام'],
     ['field-social','التحقيقات الميدانية والاجتماعية'], ['culture-arts','ثقافة وفنون'],
-    ['travel-tourism','سياحة وسفر'], ['sports','الرياضة']
+    ['travel-tourism','سياحة وسفر'], ['sports','الرياضة'], ['human-stories','قصص إنسانية']
   ];
   const esc = (value='') => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
   const formatDate = value => { const parsed=new Date(value||0); return Number.isNaN(parsed.getTime())?'':parsed.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'}); };
