@@ -8,3 +8,4 @@ tina-admin/
 dist/
 coverage/
 *.log
+supabase/.temp/

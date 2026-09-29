@@ -29,6 +29,10 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: npm
+
+      - name: Install build dependencies
+        run: npm ci
 
       - name: Inject dynamic homepage feed
         run: node scripts/inject-homepage-feed.mjs
@@ -68,8 +72,11 @@ jobs:
           grep -q 'src="../public/supabase-public-config.js"' admin/dashboard.html
           echo "Admin runtime dependencies verified."
 
-      - name: Validate site before deploy
-        run: npm run validate:site
+      - name: Build CSS and validate site before deploy
+        run: npm test
+
+      - name: Remove build-only dependencies
+        run: rm -rf node_modules
 
       - name: Configure Pages
         uses: actions/configure-pages@v5
