@@ -4,6 +4,7 @@ import path from "node:path";
 const root = process.cwd();
 const requiredFiles = [
   "index.html",
+  "404.html",
   "newsroom.html",
   "submit.html",
   "admin/dashboard.html",
@@ -19,6 +20,7 @@ const requiredFiles = [
   "corrections.html",
   "contact.html",
   "public/policy.css",
+  "public/tailwind.css",
   ".github/workflows/pages-deploy.yml",
 ];
 
@@ -40,6 +42,7 @@ const privacy = fs.readFileSync(path.join(root, "privacy.html"), "utf8");
 const editorialPolicy = fs.readFileSync(path.join(root, "editorial-policy.html"), "utf8");
 const corrections = fs.readFileSync(path.join(root, "corrections.html"), "utf8");
 const contact = fs.readFileSync(path.join(root, "contact.html"), "utf8");
+const notFound = fs.readFileSync(path.join(root, "404.html"), "utf8");
 if (!newsroom.includes("public/newsroom-supabase.js")) throw new Error("Newsroom must load the Supabase feed");
 if (!index.includes("public/supabase-feed.js") && !homepageInjector.includes("public/supabase-feed.js")) {
   throw new Error("Homepage deployment must inject the Supabase feed");
@@ -60,6 +63,16 @@ if (!editorialPolicy.includes("حق الرد") || !editorialPolicy.includes("ا�
 }
 if (!corrections.includes("طلب تصحيح") || !contact.includes("alnuqtamedia@gmail.com")) {
   throw new Error("Corrections and public contact routes are incomplete.");
+}
+if (!notFound.includes("الصفحة غير موجودة") || !notFound.includes('href="newsroom.html"')) {
+  throw new Error("The branded 404 recovery page is incomplete.");
+}
+const publicHtmlFiles = fs.readdirSync(root).filter(file => file.endsWith(".html"));
+for (const file of publicHtmlFiles) {
+  const html = fs.readFileSync(path.join(root, file), "utf8");
+  if (html.includes("cdn.tailwindcss.com")) {
+    throw new Error(`Public page must use the production CSS bundle instead of Tailwind CDN: ${file}`);
+  }
 }
 if (/href=["'][^"']*admin\/?["']/.test(index)) throw new Error("Public homepage must not expose the private admin login link");
 if (!adminLogin.includes("../public/supabase-public-config.js") || !dashboard.includes("../public/supabase-public-config.js")) throw new Error("Admin pages must load Supabase runtime config");
