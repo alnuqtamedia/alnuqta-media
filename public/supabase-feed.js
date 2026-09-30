@@ -9,7 +9,7 @@
     ['travel-tourism','سياحة وسفر'], ['sports','الرياضة'], ['human-stories','قصص إنسانية']
   ];
   const esc = (value='') => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
-  const formatDate = value => { const parsed=new Date(value||0); return Number.isNaN(parsed.getTime())?'':parsed.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'}); };
+  const formatDate = value => { const parsed=new Date(value||0); return Number.isNaN(parsed.getTime())?'':parsed.toLocaleDateString(window.ALNUQTA_LANGUAGE==='en'?'en-GB':'ar-IQ',{year:'numeric',month:'long',day:'numeric'}); };
   const categoryKey = post => post.category || (post.section==='investigation'?'field-social':'');
   const categoryLabel = post => categories.find(([id])=>id===categoryKey(post))?.[1] || types[post.section] || 'مادة صحفية';
   const cover = post => post.cover_image_url || post.image || post.gallery?.[0]?.url || '';
@@ -51,5 +51,5 @@
   function showError(error){console.warn('Supabase public feed unavailable.',error);const grid=latestSection()?.querySelector('.grid');if(grid)grid.innerHTML='<div class="md:col-span-2 lg:col-span-3 bg-navy-card border border-navy-light rounded-xl p-7 text-center"><p class="text-gray-300">تعذر تحميل أحدث المواد الآن.</p><a href="newsroom.html" class="inline-block mt-4 text-red-300 font-bold">فتح غرفة الأخبار ←</a></div>';}
   if(!url||!key){console.warn('Alnuqta public Supabase feed is not configured yet.');return;}
   const endpoint=`${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published`;
-  fetch(endpoint,{headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json'},cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`Supabase feed request failed: ${response.status}`);return response.json();}).then(render).catch(showError);
+  fetch(endpoint,{headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json'},cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`Supabase feed request failed: ${response.status}`);return response.json();}).then(rows => window.ALNUQTA_I18N.articles(rows)).then(render).catch(showError);
 })();
