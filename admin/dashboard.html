@@ -33,7 +33,7 @@
 <div class="field"><label>الحالة التحريرية</label><select id="articleStatus"><option value="draft">مسودة</option><option value="review">قيد المراجعة</option><option value="ready">جاهز للنشر</option><option value="published">منشور</option></select></div>
 <div class="field"><label>الملخص</label><textarea id="excerpt" style="min-height:90px" placeholder="ملخص قصير يوضح أهم ما في المادة"></textarea></div><div class="status" id="workflowHint">ابدأ كمسودة، ثم أرسلها للمراجعة عند اكتمالها.</div>
 <div class="subcard"><h3>فريق المادة</h3><div class="team-grid">
-<div class="field"><label>الكاتب / المعد</label><select id="writerId"><option value="">— غير محدد —</option></select><input id="writerName" type="hidden"></div><div class="field"><label>المحرر</label><select id="editorId"><option value="">— غير محدد —</option></select><input id="editorName" type="hidden"></div>
+<div class="field"><label>الكاتب / المعد</label><select id="writerId"><option value="">— غير محدد —</option></select><label for="writerName">اسم النشر (اختياري)</label><input id="writerName" type="text" maxlength="100" placeholder="اسم مستعار أو اسم الكاتب"><div class="hint">هذا الاسم يظهر للقراء حتى بدون اختيار كاتب من الفريق. إذا تركته فارغاً يُستخدم اسم الكاتب المختار. يمكن النشر بدون كاتب وبدون اسم نشر.</div></div><div class="field"><label>المحرر</label><select id="editorId"><option value="">— غير محدد —</option></select><input id="editorName" type="hidden"></div>
 <div class="field"><label>المصور</label><select id="photographerId"><option value="">— غير محدد —</option></select><input id="photographerName" type="hidden"></div><div class="field"><label>تصوير الفيديو / الكاميرا</label><select id="videographerId"><option value="">— غير محدد —</option></select><input id="videographerName" type="hidden"></div>
 <div class="field"><label>المصمم</label><select id="designerId"><option value="">— غير محدد —</option></select><input id="designerName" type="hidden"></div></div></div>
 <div class="subcard"><h3>الصورة البارزة</h3><div class="field"><label>رفع صورة من الجهاز</label><input id="coverFile" type="file" accept="image/*"><div id="coverUploadState" class="upload-state"></div></div>
@@ -94,7 +94,7 @@ async function loadTeamDirectory(){
 }
 function syncTeamNames(){
   [['writerId','writerName'],['editorId','editorName'],['photographerId','photographerName'],['videographerId','videographerName'],['designerId','designerName']].forEach(([sid,nid])=>{
-    const s=$(sid),n=$(nid); if(s&&n)n.value=s.selectedIndex>0?s.options[s.selectedIndex].text:'';
+    const s=$(sid),n=$(nid); if(s&&n){if(nid==='writerName'&&n.value.trim())return;n.value=s.selectedIndex>0?s.options[s.selectedIndex].text:'';}
   });
 }
 async function loadTeam(){
