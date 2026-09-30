@@ -23,7 +23,8 @@
       if (!r.ok) throw new Error(`Supabase newsroom request failed: ${r.status}`);
       return r.json();
     })
-    .then(data => {
+    .then(async data => {
+      data = await window.ALNUQTA_I18N.articles(data);
       if (!Array.isArray(data)) throw new Error('Supabase returned an invalid newsroom response.');
 
       // Some existing Supabase rows may not have a slug. Give every published
