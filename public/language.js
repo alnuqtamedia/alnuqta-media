@@ -53,12 +53,16 @@
     'المصمم':'Designer','وقت القراءة':'Reading time','المنهجية':'Methodology','حق الرد':'Right of reply',
     'المصادر':'Sources','شارك المادة':'Share this article','نسخ الرابط':'Copy link',
     'انشر رابط المادة مباشرة على المنصات التي تدعم مشاركة الروابط.':'Share the article link on these platforms.',
+    'مشاركة على فيسبوك':'Share on Facebook','مشاركة على إكس':'Share on X','مشاركة على واتساب':'Share on WhatsApp','مشاركة على تيليغرام':'Share on Telegram',
     'مشاهدة الفيديو':'Watch video','النقطة Media | منصة إعلامية استقصائية عراقية':'Alnuqta Media | Iraqi investigative journalism',
     'غرفة الأخبار | النقطة':'Newsroom | Alnuqta'
   };
   Object.assign(dictionary, window.ALNUQTA_PAGE_TRANSLATIONS || {});
   function translate(value) {
     const clean = value.trim();
+    if (clean.startsWith('· ') && dictionary[clean.slice(2)]) return value.replace(clean, '· '+dictionary[clean.slice(2)]);
+    if (clean.startsWith('قراءة أحدث مادة: ')) return value.replace('قراءة أحدث مادة: ', 'Read latest article: ');
+    if (clean.startsWith('قراءة ')) return value.replace('قراءة ', 'Read ');
     if (dictionary[clean]) return value.replace(clean, dictionary[clean]);
     const total = clean.match(/^عدد (التحقيقات|الوثائق) المنشورة: (\d+)$/); if (total) return `${total[1]==='الوثائق'?'Documents':'Investigations'}: ${total[2]}`;
     const minutes = clean.match(/^(\d+) (دقيقة|دقائق قراءة)$/); if (minutes) return `${minutes[1]} min read`;

@@ -21,4 +21,6 @@ const ar=setup('?lang=ar','en',[version]);assert.equal(ar.document.documentEleme
 assert.equal((await ar.window.ALNUQTA_I18N.articles([row]))[0].title,row.title);
 const [failed]=await setup('?lang=en',null,[],false).window.ALNUQTA_I18N.articles([row]);assert.equal(failed.translation_available,false);
 assert.equal(en.window.ALNUQTA_I18N.translate('عدد المواد: 9'),'Articles: 9');
+assert.equal(en.window.ALNUQTA_I18N.translate(' · ثقافة وفنون'),' · Culture and arts');
+assert.equal(en.window.ALNUQTA_I18N.translate('قراءة English title'),'Read English title');
 console.log('Language checks passed: source preserved, approved current versions only, URL preference, API failure fallback.');
