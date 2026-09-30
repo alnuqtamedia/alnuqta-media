@@ -1,7 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const allowedOrigins = new Set(["https://alnuqtamedia.github.io", "http://localhost:8000", "http://127.0.0.1:8000"]);
+const allowedOrigins = new Set([
+  "https://alnuqtamedia.com",
+  "https://www.alnuqtamedia.com","https://alnuqtamedia.github.io", "http://localhost:8000", "http://127.0.0.1:8000"]);
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/i;
 
 function json(origin: string, status: number, body: Record<string, unknown>) {
@@ -25,7 +27,7 @@ function randomToken() {
 Deno.serve(async (req: Request) => {
   const origin = req.headers.get("origin") || "";
   if (!allowedOrigins.has(origin)) return json("https://alnuqtamedia.github.io", 403, { error: "origin_not_allowed" });
-  if (req.method === "OPTIONS") return json(origin, 204, {});
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: { "Access-Control-Allow-Origin": origin, "Access-Control-Allow-Headers": "content-type, apikey, authorization, x-client-info", "Access-Control-Allow-Methods": "POST, OPTIONS", "Vary": "Origin" } });
   if (req.method !== "POST") return json(origin, 405, { error: "method_not_allowed" });
 
   try {

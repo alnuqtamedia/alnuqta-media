@@ -50,7 +50,7 @@ if (!index.includes("public/supabase-feed.js") && !homepageInjector.includes("pu
 
 if (!index.includes('rel="canonical"') || !newsroom.includes('rel="canonical"')) throw new Error("Public pages need canonical URLs");
 if (!robots.includes("sitemap.xml")) throw new Error("robots.txt must reference sitemap.xml");
-if (!sitemap.includes("newsroom.html") || !sitemap.includes("alnuqtamedia.github.io/alnuqta-media/")) throw new Error("sitemap.xml is missing core public URLs");
+if (!sitemap.includes("newsroom.html") || !sitemap.includes("https://alnuqtamedia.com/")) throw new Error("sitemap.xml is missing core public URLs");
 for (const page of ["privacy.html", "editorial-policy.html", "corrections.html", "contact.html"]) {
   if (!sitemap.includes(page)) throw new Error(`sitemap.xml is missing policy page: ${page}`);
   if (!index.includes(`href="${page}"`)) throw new Error(`Homepage footer is missing policy page: ${page}`);
