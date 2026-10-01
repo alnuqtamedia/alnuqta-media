@@ -111,7 +111,14 @@
       nav.append(button);
     }
     apply(document.documentElement);
-    new MutationObserver(()=>apply(document.body)).observe(document.body,{childList:true,subtree:true,characterData:true});
+    new MutationObserver(records=>{
+      const roots=new Set();
+      for(const record of records){
+        if(record.type==='characterData'){const node=record.target;if(!node.parentElement?.closest('script,style,.article-body,[data-language-toggle],[data-original-language]')){const text=translate(node.nodeValue);if(text!==node.nodeValue)node.nodeValue=text;}}
+        else for(const node of record.addedNodes){if(node.nodeType===1)roots.add(node);else if(node.nodeType===3&&node.parentElement)roots.add(node.parentElement);}
+      }
+      for(const root of roots)apply(root);
+    }).observe(document.body,{childList:true,subtree:true,characterData:true});
     document.addEventListener('click',event=>{const link=event.target.closest?.('a[href]');if(!link||link.hasAttribute('download'))return;const url=new URL(link.href);if(url.origin===location.origin&&!url.pathname.includes('/admin/')&&/\.html$|\/$/.test(url.pathname)){url.searchParams.set('lang',language);link.href=url.href;}});
   });
 })();
