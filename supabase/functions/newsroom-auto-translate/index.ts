@@ -31,7 +31,7 @@ Deno.serve(async req=>{
  if(response.ok||![404,429,500,502,503,504].includes(response.status))break;
  }
  if(!response){throw Error('provider_unavailable');}
- if(!response.ok){code=response.status===429?'provider_quota':response.status===401||response.status===403?'provider_auth':'provider_http_'+response.status;throw Error(code);}
+ if(!response.ok){const provider=await response.json().catch(()=>({}));console.warn('translation_provider_error',response.status,String(provider?.error?.message||'').slice(0,250));code=response.status===429?'provider_quota':response.status===401||response.status===403?'provider_auth':'provider_http_'+response.status;throw Error(code);}
  const data=await response.json();
  let raw=typeof data.output_text==='string'?data.output_text:'';
  if(!raw)raw=(data.outputs||[]).filter((x:any)=>typeof x.text==='string').map((x:any)=>x.text).join('');
