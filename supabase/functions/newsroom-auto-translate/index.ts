@@ -20,7 +20,7 @@ Deno.serve(async req=>{
  const source=job.source;
  const schema={type:'object',properties:Object.fromEntries(fields.map(f=>[f,{type:'string'}])),required:fields};
  let response:Response|null=null;
- const models=[Deno.env.get('NEWSROOM_TRANSLATION_MODEL')||Deno.env.get('GEMINI_MODEL')||'gemini-3.8-flash','gemini-3.8-flash'].filter((m,i,a)=>a.indexOf(m)===i);
+ const models=[Deno.env.get('NEWSROOM_TRANSLATION_MODEL')||Deno.env.get('GEMINI_MODEL')||'gemini-3.8-flash',Deno.env.get('GEMINI_FALLBACK_MODEL')||'gemini-3.5-flash-lite'].filter((m,i,a)=>a.indexOf(m)===i);
  for(const model of models){
  response=await fetch('https://generativelanguage.googleapis.com/v1beta/interactions',{
  method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':key},
