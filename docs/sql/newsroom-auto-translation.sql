@@ -28,7 +28,7 @@ begin
  perform net.http_post(
  url:='https://zsqvmuqlmtnhndwuqlfy.supabase.co/functions/v1/newsroom-auto-translate',
  headers:=jsonb_build_object('Content-Type','application/json'),
- body:=jsonb_build_object('article_id',j.article_id,'token',j.token),timeout_milliseconds:=1000);
+ body:=jsonb_build_object('article_id',j.article_id,'token',j.token),timeout_milliseconds:=120000);
 end;
 $$;
 create function newsroom_private.queue_translation() returns trigger
