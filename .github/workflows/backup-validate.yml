@@ -1,0 +1,26 @@
+name: Validate backups
+on:
+  pull_request:
+    paths:
+      - 'scripts/backup-*'
+      - 'scripts/test-backup.py'
+      - '.github/workflows/backup-*.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/backup-*'
+      - 'scripts/test-backup.py'
+      - '.github/workflows/backup-*.yml'
+permissions:
+  contents: read
+jobs:
+  offline-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: python3 scripts/test-backup.py
+      - run: bash -n scripts/backup-daily.sh
+      - run: python3 -m py_compile scripts/backup-package.py scripts/backup-preserve.py scripts/backup-verify.py
