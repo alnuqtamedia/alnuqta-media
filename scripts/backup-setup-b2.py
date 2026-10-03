@@ -8,7 +8,7 @@ from nacl.public import PublicKey, SealedBox
 
 CAPS = ['listFiles', 'readFiles', 'writeFiles', 'readFileRetentions', 'writeFileRetentions']
 REPO = 'alnuqtamedia/alnuqta-media'
-ENV = 'backup'
+ENV = 'Backblaze'
 
 def request(url, token, data=None, method=None):
     headers = {'Authorization': token, 'User-Agent': 'alnuqta-backup-setup',
