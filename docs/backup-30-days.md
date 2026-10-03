@@ -16,7 +16,7 @@ B2 lifecycle runs asynchronously. Files are hidden after 30 days and physically 
 
 ## GitHub configuration
 
-Create environment `backup`, restrict it to the default branch, protect workflow/script changes through review. Enable notifications for workflow failures; independent stale-backup monitoring is still required because missed schedules do not generate failures.
+Use the existing environment `Backblaze`, restrict it to the default branch, protect workflow/script changes through review. Enable notifications for workflow failures; independent stale-backup monitoring is still required because missed schedules do not generate failures.
 
 Secrets: BACKUP_DATABASE_URL (direct or session-pooler Postgres URL, never transaction pooler), SOURCE_S3_ACCESS_KEY, SOURCE_S3_SECRET_KEY (Supabase Storage S3 credentials), B2_ACCESS_KEY, B2_SECRET_KEY. Use the GitHub environment secrets interface; never paste keys into chat or commit them.
 
@@ -54,4 +54,4 @@ Run `python3 scripts/test-backup.py`. Eight tests cover ZIP roundtrip, repeated 
 
 After decrypting an actual backup, run `python3 scripts/backup-verify.py backup.zip` BEFORE extracting or restoring. It verifies exact manifest inventory, required files, SHA256 and Storage sizes without extraction. Failure stops recovery. This verifies the archive bytes; it does not prove PostgreSQL or managed Supabase restoration. The daily runner invokes it before encryption.
 
-Connection remains unconfigured: no B2 bucket or GitHub environment secret was created through this implementation. The schedule stays disabled; verify first export/upload/download/decryption and managed-Supabase restore before production enablement.
+The `Backblaze` environment was verified to contain B2_SETUP_KEY_ID and B2_SETUP_KEY on 2026-10-03. Key provisioning still requires BACKUP_SETUP_GITHUB_TOKEN and both bucket ID variables; no provisioning or backup run is confirmed. The schedule stays disabled; verify first export/upload/download/decryption and managed-Supabase restore before production enablement.
