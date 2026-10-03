@@ -8,6 +8,12 @@ from pathlib import Path
 
 def package(root, output):
     root = Path(root).resolve()
+    output = Path(output).resolve()
+    if output.is_relative_to(root):
+        raise ValueError('ZIP output must be outside payload')
+    if (root / 'manifest.json').is_symlink():
+        raise ValueError('Manifest symlink forbidden')
+    (root / 'manifest.json').unlink(missing_ok=True)
     for obj in json.loads((root / 'objects.json').read_text()):
         path = (root / 'storage' / obj['bucket_id'] / obj['name']).resolve()
         if not path.is_relative_to(root / 'storage') or not path.is_file():
