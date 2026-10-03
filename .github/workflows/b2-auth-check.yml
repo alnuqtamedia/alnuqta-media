@@ -1,0 +1,25 @@
+name: B2 authentication check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    if: github.ref == 'refs/heads/main'
+    environment: Backblaze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - run: python3 -m pip install PyNaCl==1.5.0
+      - name: Check authentication without creating keys
+        env:
+          B2_AUTH_CHECK_ONLY: 'true'
+          B2_SETUP_KEY_ID: ${{ secrets.B2_SETUP_KEY_ID }}
+          B2_SETUP_KEY: ${{ secrets.B2_SETUP_KEY }}
+          BACKUP_SETUP_GITHUB_TOKEN: ${{ secrets.BACKUP_SETUP_GITHUB_TOKEN }}
+          B2_EMERGENCY_BUCKET_ID: ${{ vars.B2_EMERGENCY_BUCKET_ID }}
+          B2_PRESERVATION_BUCKET_ID: ${{ vars.B2_PRESERVATION_BUCKET_ID }}
+        run: python3 scripts/backup-setup-b2.py
