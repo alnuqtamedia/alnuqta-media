@@ -1,0 +1,33 @@
+name: One-time B2 key setup
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type CREATE_NO_DELETE_KEY to provision B2 credentials'
+        required: true
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: backup-b2-setup
+  cancel-in-progress: false
+jobs:
+  setup:
+    if: github.ref == 'refs/heads/main' && inputs.confirm == 'CREATE_NO_DELETE_KEY'
+    environment: backup
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Install secret encryption library
+        run: python3 -m pip install PyNaCl==1.5.0
+      - name: Create restricted key and save encrypted secrets
+        env:
+          B2_SETUP_KEY_ID: ${{ secrets.B2_SETUP_KEY_ID }}
+          B2_SETUP_KEY: ${{ secrets.B2_SETUP_KEY }}
+          BACKUP_SETUP_GITHUB_TOKEN: ${{ secrets.BACKUP_SETUP_GITHUB_TOKEN }}
+          B2_EMERGENCY_BUCKET_ID: ${{ vars.B2_EMERGENCY_BUCKET_ID }}
+          B2_PRESERVATION_BUCKET_ID: ${{ vars.B2_PRESERVATION_BUCKET_ID }}
+        run: python3 scripts/backup-setup-b2.py
