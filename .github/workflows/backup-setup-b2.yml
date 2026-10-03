@@ -14,7 +14,7 @@ concurrency:
 jobs:
   setup:
     if: github.ref == 'refs/heads/main' && inputs.confirm == 'CREATE_NO_DELETE_KEY'
-    environment: backup
+    environment: Backblaze
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     steps:
