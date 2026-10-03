@@ -1,0 +1,40 @@
+name: Daily encrypted backup
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '23 23 * * *' # 02:23 Baghdad; schedules may be delayed.
+permissions:
+  contents: read
+concurrency:
+  group: independent-daily-backup
+  cancel-in-progress: false
+jobs:
+  backup:
+    if: vars.BACKUP_ENABLED == 'true'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    environment: backup
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Install encryption tool
+        run: sudo apt-get update -qq && sudo apt-get install -y age
+      - name: Export, ZIP, encrypt, upload and verify
+        env:
+          PGDATABASE: ${{ secrets.BACKUP_DATABASE_URL }}
+          BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          SOURCE_S3_ENDPOINT: ${{ vars.SOURCE_S3_ENDPOINT }}
+          SOURCE_S3_REGION: ${{ vars.SOURCE_S3_REGION }}
+          SOURCE_S3_ACCESS_KEY: ${{ secrets.SOURCE_S3_ACCESS_KEY }}
+          SOURCE_S3_SECRET_KEY: ${{ secrets.SOURCE_S3_SECRET_KEY }}
+          B2_ENDPOINT: ${{ vars.B2_ENDPOINT }}
+          B2_REGION: ${{ vars.B2_REGION }}
+          B2_BUCKET: ${{ vars.B2_BUCKET }}
+          B2_ARCHIVE_BUCKET: ${{ vars.B2_ARCHIVE_BUCKET }}
+          B2_ACCESS_KEY: ${{ secrets.B2_ACCESS_KEY }}
+          B2_SECRET_KEY: ${{ secrets.B2_SECRET_KEY }}
+        run: bash scripts/backup-daily.sh
+      - name: Failure summary
+        if: failure()
+        run: echo 'Backup failed. No successful-backup claim was issued. Review the run; configure independent stale-backup monitoring.' >> "$GITHUB_STEP_SUMMARY"
