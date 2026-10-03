@@ -31,6 +31,13 @@ def main():
     for name in required:
         if not os.environ.get(name):
             raise ValueError('Missing configuration')
+    for name in ['B2_SETUP_KEY_ID', 'B2_SETUP_KEY']:
+        value = os.environ[name]
+        if value != value.strip():
+            print(name + ': surrounding whitespace removed for this request')
+        os.environ[name] = value.strip()
+        if any(ch.isspace() for ch in os.environ[name]):
+            raise ValueError('Credential contains internal whitespace')
     buckets = [os.environ['B2_EMERGENCY_BUCKET_ID'], os.environ['B2_PRESERVATION_BUCKET_ID']]
     if len(set(buckets)) != 2 or not all(re.fullmatch(r'[a-zA-Z0-9]+', b) for b in buckets):
         raise ValueError('Two distinct bucket IDs required')
@@ -48,6 +55,9 @@ def main():
     auth = base64.b64encode((os.environ['B2_SETUP_KEY_ID'] + ':' + os.environ['B2_SETUP_KEY']).encode()).decode()
     STAGE = 'b2-authorization'
     account = request('https://api.backblazeb2.com/b2api/v4/b2_authorize_account', 'Basic ' + auth)
+    if os.environ.get('B2_AUTH_CHECK_ONLY') == 'true':
+        print('B2 authentication succeeded. No key created or secrets changed.')
+        return
     storage = account['apiInfo']['storageApi']
     api = storage['apiUrl']
     parsed = urlparse(api)
@@ -74,6 +84,13 @@ if __name__ == '__main__':
         main()
     except Exception as error:
         # Never print exceptions or response bodies containing credential values.
+        if isinstance(error, HTTPError) and STAGE == 'b2-authorization':
+            try:
+                provider_code = json.loads(error.read(8192)).get('code')
+                if provider_code in {'unauthorized', 'unsupported', 'bad_request', 'expired_auth_token', 'bad_auth_token'}:
+                    print('B2 error category: ' + provider_code, file=sys.stderr)
+            except Exception:
+                pass
         code = str(error.code) if isinstance(error, HTTPError) else type(error).__name__
         print('Failure stage: ' + STAGE + '; status: ' + code, file=sys.stderr)
         print('Setup failed. Inspect B2 for a partially created key before retrying; no automatic retry.', file=sys.stderr)
