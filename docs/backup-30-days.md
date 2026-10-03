@@ -47,3 +47,11 @@ References:
 - https://www.backblaze.com/docs/cloud-storage-object-lock
 - https://supabase.com/docs/guides/platform/backups
 - https://supabase.com/docs/guides/storage/management/download-objects
+
+## Offline integrity validation (2026-10-03 follow-up)
+
+Run `python3 scripts/test-backup.py`. Eight tests cover ZIP roundtrip, repeated packaging, data corruption, missing media, real media inventory, unsafe paths, unlisted entries, symlinks and nested ZIP output (roundtrip/repackage share one test). These tests need no production credentials or network.
+
+After decrypting an actual backup, run `python3 scripts/backup-verify.py backup.zip` BEFORE extracting or restoring. It verifies exact manifest inventory, required files, SHA256 and Storage sizes without extraction. Failure stops recovery. This verifies the archive bytes; it does not prove PostgreSQL or managed Supabase restoration. The daily runner invokes it before encryption.
+
+Connection remains unconfigured: no B2 bucket or GitHub environment secret was created through this implementation. The schedule stays disabled; verify first export/upload/download/decryption and managed-Supabase restore before production enablement.
