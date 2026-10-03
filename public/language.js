@@ -6,7 +6,7 @@
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'en' ? 'ltr' : 'rtl';
   const dictionary = {
-    'النقطة':'Alnuqta','الرئيسية':'Home','غرفة الأخبار':'Newsroom','كل المواد':'All articles',
+    'الأرشيف':'Archive','النقطة':'Alnuqta','الرئيسية':'Home','غرفة الأخبار':'Newsroom','كل المواد':'All articles',
     'السياسة':'Politics','الاقتصاد والمال العام':'Economy and public funds',
     'التحقيقات الميدانية والاجتماعية':'Field and social investigations','ثقافة وفنون':'Culture and arts',
     'سياحة وسفر':'Travel and tourism','الرياضة':'Sports','قصص إنسانية':'Human stories',
