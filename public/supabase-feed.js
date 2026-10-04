@@ -3,19 +3,15 @@
   const url = config.url || '';
   const key = config.anonKey || '';
   const types = { investigation:'تحقيق استقصائي', report:'تقرير', news:'خبر', analysis:'تحليل', interview:'مقابلة', 'human-story':'قصة إنسانية', video:'فيديو', gallery:'معرض صور' };
-  const categories = [
-    ['politics','السياسة'], ['economy-public-money','الاقتصاد والمال العام'],
-    ['field-social','التحقيقات الميدانية والاجتماعية'], ['culture-arts','ثقافة وفنون'],
-    ['travel-tourism','سياحة وسفر'], ['sports','الرياضة'], ['human-stories','قصص إنسانية']
-  ];
+  const categories = window.ALNUQTA_SECTIONS.map(s=>[s.id,s.label]);
   const esc = (value='') => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[char]));
   const formatDate = value => { const parsed=new Date(value||0); return Number.isNaN(parsed.getTime())?'':parsed.toLocaleDateString(window.ALNUQTA_LANGUAGE==='en'?'en-GB':'ar-IQ',{year:'numeric',month:'long',day:'numeric'}); };
-  const categoryKey = post => post.category || (post.section==='investigation'?'field-social':'');
+  const categoryKey = post => window.normalizeCategory(post.category);
   const categoryLabel = post => categories.find(([id])=>id===categoryKey(post))?.[1] || types[post.section] || 'مادة صحفية';
   const cover = post => post.cover_image_url || post.image || post.gallery?.[0]?.url || '';
   function displayImageUrl(value,width){try{const u=new URL(value,location.href);if(u.hostname==='images.pexels.com'){u.search='';u.searchParams.set('auto','compress');u.searchParams.set('cs','tinysrgb');u.searchParams.set('w',String(width));u.searchParams.set('q','75');return u.href;}return value;}catch{return value;}}
   const articleUrl = post => `newsroom.html?slug=${encodeURIComponent(post.slug||post.id||'')}`;
-  const latestSection = () => document.getElementById('homepage-feed')?.closest('section') || [...document.querySelectorAll('#section-home section')].find(section=>section.querySelector('h2')?.textContent.includes('أحدث المواد'));
+  const latestSection = () => document.getElementById('homepage-feed');
 
   function placeholder(post,extra='') {
     return `<div class="${extra} bg-gradient-to-br from-navy-light via-navy to-navy-dark grid place-items-center p-8 text-center"><div><div class="mx-auto w-14 h-14 rounded-full bg-brandRed flex items-center justify-center text-4xl font-black">.</div><p class="mt-4 text-sm text-gray-300">${esc(categoryLabel(post))}</p></div></div>`;
@@ -32,25 +28,29 @@
     return `<article class="bg-navy-card border border-navy-light hover:border-brandRed/60 rounded-xl overflow-hidden flex flex-col transition group shadow-lg"><a href="${articleUrl(post)}" class="flex flex-col h-full" aria-label="قراءة ${esc(post.title)}">${image?`<img src="${esc(displayImageUrl(image,640))}" alt="${esc(post.image_alt||post.title)}" class="w-full h-44 object-cover" loading="lazy" decoding="async">`:placeholder(post,'h-44')}<div class="p-5 flex flex-col flex-1"><div class="flex items-center justify-between gap-3 text-xs"><span class="text-red-300 font-bold">${esc(categoryLabel(post))}</span><span class="text-gray-400">${formatDate(post.published_at||post.created_at)}</span></div><h3 class="font-cairo font-bold text-lg text-white group-hover:text-red-300 mt-3 leading-8">${esc(post.title)}</h3><p class="text-sm text-gray-300 leading-7 mt-2 line-clamp-3">${esc(post.excerpt||post.subtitle||'')}</p><span class="mt-auto pt-5 text-sm font-bold text-red-300">قراءة المادة ←</span></div></a></article>`;
   }
 
-  function renderCategories(posts,anchor) {
-    let section=document.getElementById('homepage-categories');
-    if(!section){section=document.createElement('section');section.id='homepage-categories';section.className='space-y-5';anchor.after(section);}
-    section.innerHTML=`<div class="flex items-end justify-between gap-4"><div><h2 class="font-cairo font-black text-xl text-white">أقسام النقطة</h2><p class="text-sm text-gray-300 mt-1">تصفح المواد المنشورة حسب الملف التحريري</p></div><a href="newsroom.html" class="text-sm font-bold text-red-300 hover:text-white">كل المواد ←</a></div><div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">${categories.map(([id,label])=>{const count=posts.filter(post=>categoryKey(post)===id).length;return `<a href="newsroom.html?section=${id}" class="bg-navy-card border border-navy-light hover:border-brandRed rounded-xl p-4 sm:p-5 transition group"><div class="flex items-center justify-between gap-3"><strong class="font-cairo text-sm sm:text-base text-white group-hover:text-red-300">${label}</strong><span class="min-w-8 h-8 px-2 rounded-full bg-navy grid place-items-center text-xs text-gray-300">${count}</span></div><span class="block text-xs text-gray-400 mt-3">${count?(count===1?'مادة واحدة منشورة':`${count} مواد منشورة`):'بانتظار أول مادة'}</span></a>`;}).join('')}</div>`;
-  }
 
+  function renderTicker(posts) {
+    const ticker=document.getElementById('homepage-ticker');if(!ticker)return;
+    const latest=categories.map(([id,label])=>({post:posts.find(p=>categoryKey(p)===id),label})).filter(x=>x.post);
+    ticker.hidden=!latest.length;
+    const links=latest.map(({post,label})=>`<a href="${articleUrl(post)}"><span>${esc(label)}</span>${esc(post.title)}</a>`).join('');
+    ticker.innerHTML=`<strong class="ticker-label">آخر الأخبار</strong><div class="ticker-window"><div class="ticker-track"><div class="ticker-copy">${links}</div><div class="ticker-copy" aria-hidden="true">${links.replaceAll('<a href=', '<a tabindex="-1" href=')}</div></div></div>`;
+  }
+  function sectionBlock(id,label,rows) {
+    const first=rows[0],image=cover(first);
+    return `<section id="home-${id}" class="space-y-5"><div class="flex items-center justify-between border-b border-navy-light pb-3"><h2 class="font-cairo font-black text-2xl">${esc(label)}</h2><a href="newsroom.html?section=${id}" class="text-red-300 text-sm font-bold">المزيد</a></div><div class="grid grid-cols-1 lg:grid-cols-12 gap-6"><article class="lg:col-span-7 bg-navy-card border border-navy-light rounded-xl overflow-hidden"><a href="${articleUrl(first)}">${image?`<img src="${esc(displayImageUrl(image,800))}" alt="${esc(first.image_alt||first.title)}" class="w-full h-64 object-cover" loading="lazy" decoding="async">`:placeholder(first,'h-64')}<div class="p-6"><time class="text-gray-400 text-xs" datetime="${esc(first.published_at||first.created_at||'')}">${formatDate(first.published_at||first.created_at)}</time><h3 class="font-cairo font-bold text-xl leading-8 mt-3">${esc(first.title)}</h3><p class="text-gray-300 leading-7 text-sm mt-3">${esc(first.excerpt||first.subtitle||'')}</p></div></a></article>${rows.length>1?`<div class="lg:col-span-5 divide-y divide-navy-light">${rows.slice(1).map(post=>`<article class="py-5"><a href="${articleUrl(post)}" class="hover:text-red-300"><h3 class="font-cairo font-bold text-lg leading-8">${esc(post.title)}</h3><time class="block text-gray-400 text-xs mt-3" datetime="${esc(post.published_at||post.created_at||'')}">${formatDate(post.published_at||post.created_at)}</time></a></article>`).join('')}</div>`:''}</div></section>`;
+  }
   function render(posts) {
-    posts=(Array.isArray(posts)?posts:[]).filter(post=>post&&String(post.title||'').trim()).map((post,index)=>({...post,slug:String(post.slug||post.id||`published-${index}`)})).sort((a,b)=>new Date(b.published_at||b.updated_at||b.created_at||0)-new Date(a.published_at||a.updated_at||a.created_at||0));
-    const section=latestSection(),grid=section?.querySelector('.grid');if(!section||!grid)return;
-    const heading=section.querySelector('h2'),description=section.querySelector('p'),allButton=section.querySelector('button');
-    if(heading)heading.innerHTML='<i data-lucide="newspaper" class="w-5 h-5 text-brandRed" aria-hidden="true"></i> أحدث المواد';
-    if(description)description.textContent='أحدث الأخبار والتقارير والتحليلات المنشورة من غرفة الأخبار';
-    if(allButton){allButton.removeAttribute('onclick');allButton.innerHTML='عرض غرفة الأخبار كاملة ←';allButton.onclick=()=>{location.href='newsroom.html';};}
-    if(!posts.length){const hero=document.querySelector('#section-home > section');if(hero)hero.innerHTML='<div class="p-10 text-center"><h1 class="font-cairo font-black text-3xl">النقطة Media</h1><p class="text-gray-300 mt-3">ستظهر أحدث المواد هنا فور اعتمادها من غرفة الأخبار.</p></div>';grid.innerHTML='<div class="md:col-span-2 lg:col-span-3 bg-navy-card border border-navy-light rounded-xl p-8 text-center text-gray-300">لا توجد مواد منشورة حالياً.</div>';renderCategories([],section);return;}
-    renderHero(posts[0]);const latest=posts.slice(1,7);grid.innerHTML=latest.length?latest.map(articleCard).join(''):'<div class="md:col-span-2 lg:col-span-3 bg-navy-card border border-navy-light rounded-xl p-7 text-center text-gray-300">هذه أحدث مادة منشورة حالياً. ستظهر المواد التالية هنا بعد اعتمادها.</div>';renderCategories(posts,section);if(window.lucide)window.lucide.createIcons();
+    posts=(Array.isArray(posts)?posts:[]).filter(post=>post&&String(post.title||'').trim()).map((post,index)=>({...post,slug:String(post.slug||post.id||`published-${index}`)})).sort((a,b)=>new Date(b.published_at||b.created_at||0)-new Date(a.published_at||a.created_at||0));
+    const section=latestSection();if(!section)return;
+    renderTicker(posts);
+    if(!posts.length){const hero=document.getElementById('homepage-featured');if(hero)hero.innerHTML='<h1 class="font-cairo font-black text-3xl">النقطة Media</h1>';section.innerHTML='<p role="status" class="text-gray-300 text-center p-8">لا توجد مواد منشورة حالياً.</p>';return;}
+    renderHero(posts[0]);
+    section.innerHTML=categories.map(([id,label])=>{const all=posts.filter(p=>categoryKey(p)===id);if(!all.length)return '';const withoutHero=all.filter(p=>p.slug!==posts[0].slug);return sectionBlock(id,label,(withoutHero.length?withoutHero:all).slice(0,4));}).join('')+'<a href="newsroom.html" class="inline-block text-red-300 font-bold">عرض غرفة الأخبار كاملة ←</a>';
+    if(window.lucide)window.lucide.createIcons();
   }
-
-  function showError(error){console.warn('Supabase public feed unavailable.',error);const grid=latestSection()?.querySelector('.grid');if(grid)grid.innerHTML='<div class="md:col-span-2 lg:col-span-3 bg-navy-card border border-navy-light rounded-xl p-7 text-center"><p class="text-gray-300">تعذر تحميل أحدث المواد الآن.</p><a href="newsroom.html" class="inline-block mt-4 text-red-300 font-bold">فتح غرفة الأخبار ←</a></div>';}
-  if(!url||!key){console.warn('Alnuqta public Supabase feed is not configured yet.');return;}
+  function showError(error){console.warn('Supabase public feed unavailable.',error);const section=latestSection();if(section)section.innerHTML='<div class="bg-navy-card border border-navy-light rounded-xl p-7 text-center" role="status"><p class="text-gray-300">تعذر تحميل أحدث المواد الآن.</p><a href="newsroom.html" class="inline-block mt-4 text-red-300 font-bold">فتح غرفة الأخبار ←</a></div>';}
+  if(!url||!key){showError(new Error('Missing public feed configuration'));return;}
   const endpoint=`${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published`;
-  fetch(endpoint,{headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json'},cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`Supabase feed request failed: ${response.status}`);return response.json();}).then(rows => window.ALNUQTA_I18N.articles(rows)).then(render).catch(showError);
+  fetch(endpoint,{headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json'},cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`Supabase feed request failed: ${response.status}`);return response.json();}).then(rows => window.ALNUQTA_I18N?.articles(rows) || rows).then(render).catch(showError);
 })();

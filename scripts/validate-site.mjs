@@ -12,6 +12,8 @@ const requiredFiles = [
   "admin/mfa.html",
   "public/newsletter.js",
   "public/supabase-feed.js",
+  "public/sections.js",
+  "public/site-header.js",
   "public/newsroom-supabase.js",
   "robots.txt",
   "sitemap.xml",
@@ -87,9 +89,12 @@ if (!dashboard.includes("source_submissions") || !dashboard.includes("source-sub
 if (!submit.includes("/functions/v1/source-submit") || !submit.includes('name="consent"')) throw new Error("Secure source submission integration is missing");
 if (!index.includes("newsletter-form") || !newsroom.includes("newsletter-form")) throw new Error("Newsletter signup must exist on homepage and newsroom");
 if (!dashboard.includes("newsletter_subscribers")) throw new Error("Dashboard newsletter subscriber integration is missing");
-for (const category of ["politics", "economy-public-money", "field-social", "culture-arts", "travel-tourism", "sports"]) {
-  if (!index.includes(`newsroom.html?section=${category}`)) throw new Error(`Homepage newsroom menu is missing category: ${category}`);
+for (const category of ['politics','world','economy','iraq','sports','arts','misc']) {
+  if(!index.includes(`newsroom.html?section=${category}`)) throw new Error(`Missing section ${category}`);
 }
+if(!index.includes('public/sections.js')) throw new Error('Homepage must load shared sections');
+for(const file of publicHtmlFiles){const html=fs.readFileSync(path.join(root,file),'utf8');if(/newsroom-menu|newsroom-dropdown/.test(html))throw new Error(`Retired navigation in ${file}`);}
+
 
 const misleadingSecurityClaims = [
   "تشفير الاتصال وآلية حماية المصادر مفعلة",

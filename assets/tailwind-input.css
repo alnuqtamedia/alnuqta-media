@@ -1,3 +1,8 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* One latest headline per section, shared with the homepage feed. */
+.news-ticker{display:flex;direction:rtl;background:#122238;border-bottom:1px solid #1b2e4b;min-height:48px;overflow:hidden;color:#fff}.news-ticker[hidden]{display:none}.ticker-label{position:relative;z-index:1;flex-shrink:0;display:grid;place-items:center;background:#e31217;padding:10px 18px;font-size:14px}.ticker-window{overflow:hidden;flex:1;min-width:0;direction:ltr}.ticker-track{display:flex;width:max-content;animation:news-ticker-scroll 65s linear infinite}.ticker-copy{display:flex;flex-shrink:0;align-items:center;gap:32px;padding:12px 16px;direction:rtl}.ticker-copy a{display:inline-flex;align-items:center;gap:10px;white-space:nowrap;font-size:14px}.ticker-copy span{background:#e31217;border-radius:4px;padding:2px 8px;font-size:12px;font-weight:bold}.news-ticker:hover .ticker-track,.news-ticker:focus-within .ticker-track{animation-play-state:paused}
+@keyframes news-ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(prefers-reduced-motion:reduce){.ticker-window{overflow-x:auto}.ticker-track{animation:none}.ticker-copy[aria-hidden]{display:none}}

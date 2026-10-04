@@ -1,0 +1,9 @@
+
+/* Shared public navigation; independent of each page's colour scheme. */
+.site-header{position:sticky;top:0;z-index:40;background:#0a1a2f;color:#fff;border-bottom:1px solid #1b2e4b;font-family:Cairo,Tajawal,sans-serif}
+.site-header .site-header-inner{max-width:1280px;margin:auto;padding:16px 20px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.site-header .site-brand{font-size:24px;font-weight:900;white-space:nowrap;color:#fff;text-decoration:none}.site-brand span{color:#f87171}
+.site-header .site-navigation{display:flex;align-items:center;gap:20px;font-size:14px;font-weight:700}.site-header a{text-decoration:none}.site-header .site-navigation a{color:inherit}.site-header .site-navigation a:hover{color:#f87171}
+.site-header button{cursor:pointer;background:transparent;color:inherit;border:1px solid #64748b;border-radius:6px;padding:6px 10px}.site-header a:focus-visible,.site-header button:focus-visible{outline:2px solid #f87171;outline-offset:4px}
+.home-menu{position:relative}.home-menu-row{display:flex;align-items:center;gap:4px}.site-header .sections-menu{display:none;position:absolute;top:100%;inset-inline-start:0;min-width:210px;background:#122238;padding:8px;border:1px solid #334155;border-radius:10px;box-shadow:0 12px 25px #0005;z-index:50}.home-menu.open .sections-menu{display:block}.site-header .sections-menu a{display:block;padding:10px;border-radius:6px}.site-header .sections-menu a:hover{background:#1b2e4b}.site-header .site-mobile-toggle{display:none}
+@media(max-width:1099px){.site-header .site-mobile-toggle{display:block}.site-header .site-navigation{display:none;width:100%;align-items:stretch;gap:4px}.site-header.mobile-open .site-navigation{display:flex;flex-direction:column}.site-header .site-navigation>a{padding:10px}.site-header .home-menu-row{justify-content:space-between;padding:6px 10px}.site-header .sections-menu{position:static;box-shadow:none;margin-top:5px;width:100%}}
