@@ -12,10 +12,11 @@ function scenario(wide){
  document={documentElement:{lang:'ar'},activeElement:null,querySelector:()=>header,addEventListener:(name,fn)=>callbacks[name]=fn};
  vm.runInNewContext(fs.readFileSync('public/site-header.js','utf8'),{document,window:{buildSectionsMenu(){}},matchMedia:()=>desktop});callbacks.DOMContentLoaded();return {header,mobile,toggle,home,navigation,link,callbacks,document};
 }
-const mobile=scenario(false);mobile.mobile.listeners.click();mobile.toggle.listeners.click();mobile.link.focus();mobile.callbacks.keydown({key:'Escape'});
+const mobile=scenario(false);mobile.mobile.listeners.click();assert.equal(mobile.home.classList.contains('open'),true);mobile.home.listeners.focusout({relatedTarget:mobile.navigation});assert.equal(mobile.home.classList.contains('open'),true);mobile.link.focus();mobile.callbacks.keydown({key:'Escape'});
 assert.equal(mobile.mobile.getAttribute('aria-expanded'),'false');assert.equal(mobile.toggle.getAttribute('aria-expanded'),'false');assert.equal(mobile.document.activeElement,mobile.mobile);
-mobile.mobile.listeners.click();mobile.toggle.listeners.click();mobile.mobile.listeners.click();assert.equal(mobile.home.classList.contains('open'),false);
+mobile.mobile.listeners.click();assert.equal(mobile.home.classList.contains('open'),true);mobile.mobile.listeners.click();assert.equal(mobile.home.classList.contains('open'),false);
 mobile.mobile.listeners.click();mobile.callbacks.resize();assert.equal(mobile.header.classList.contains('mobile-open'),false);
 const desktop=scenario(true);desktop.home.listeners.pointerenter({pointerType:'mouse'});desktop.link.focus();desktop.callbacks.keydown({key:'Escape'});assert.equal(desktop.document.activeElement,desktop.toggle);assert.equal(desktop.toggle.getAttribute('aria-expanded'),'false');
 desktop.toggle.listeners.click();desktop.callbacks.click({target:{}});assert.equal(desktop.home.classList.contains('open'),false);
+assert.ok(!fs.readFileSync('assets/tailwind-input.css','utf8').includes('animation-play-state:paused'));
 console.log('Navigation checks passed: mobile Escape focus, accordion reset, viewport changes, desktop Escape and outside click.');
