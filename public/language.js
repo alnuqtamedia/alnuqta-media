@@ -6,6 +6,7 @@
   document.documentElement.lang = language;
   document.documentElement.dir = language === 'en' ? 'ltr' : 'rtl';
   const dictionary = {
+    'أخبار العالم':'World News','اقتصاد':'Economy','أخبار العراق':'Iraq News','الفن':'Arts','المنوعات':'Miscellaneous','مقالات الرأي':'Opinion Articles','مقال رأي':'Opinion article','تقارير':'Reports','آخر الأخبار':'Latest News','المزيد':'More','عرض الأقسام':'Show sections',
     'الأرشيف':'Archive','النقطة':'Alnuqta','الرئيسية':'Home','غرفة الأخبار':'Newsroom','كل المواد':'All articles',
     'السياسة':'Politics','الاقتصاد والمال العام':'Economy and public funds',
     'التحقيقات الميدانية والاجتماعية':'Field and social investigations','ثقافة وفنون':'Culture and arts',
@@ -102,7 +103,8 @@
   }};
   document.addEventListener('DOMContentLoaded', () => {
     const targets = Array.from(document.querySelectorAll('header nav'));
-    if (!targets.length) targets.push(document.querySelector('main'));
+    if(document.getElementById('language')) targets.length=0;
+    if (!targets.length && !document.getElementById('language')) targets.push(document.querySelector('main'));
     for (const nav of targets.filter(Boolean)) {
       const button = document.createElement('button'); button.type='button';button.dataset.languageToggle='';
       button.textContent=language==='en'?'العربية':'English';button.setAttribute('aria-label',language==='en'?'Switch to Arabic':'Switch to English');

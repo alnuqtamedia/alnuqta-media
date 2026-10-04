@@ -1,0 +1,20 @@
+(() => {
+  'use strict';
+  document.addEventListener('DOMContentLoaded', () => {
+    const header = document.querySelector('.site-header');
+    if (!header) return;
+    const mobile = header.querySelector('.site-mobile-toggle');
+    const toggle = header.querySelector('[data-sections-toggle]');
+    const home = header.querySelector('.home-menu');
+    const setHome = open => { home.classList.toggle('open', open); toggle.setAttribute('aria-expanded', String(open)); };
+    const close = () => { setHome(false); header.classList.remove('mobile-open'); mobile.setAttribute('aria-expanded','false'); };
+    toggle.addEventListener('click', () => setHome(toggle.getAttribute('aria-expanded') !== 'true'));
+    mobile.addEventListener('click', () => { const open = header.classList.toggle('mobile-open'); mobile.setAttribute('aria-expanded',String(open)); });
+    home.addEventListener('pointerenter', event => { if(event.pointerType === 'mouse' && matchMedia('(min-width:1100px)').matches) setHome(true); });
+    home.addEventListener('pointerleave', event => { if(event.pointerType === 'mouse' && matchMedia('(min-width:1100px)').matches && !home.contains(document.activeElement)) setHome(false); });
+    home.addEventListener('focusout', event => { if(!home.contains(event.relatedTarget)) setHome(false); });
+    document.addEventListener('click', event => { if(!header.contains(event.target)) close(); });
+    document.addEventListener('keydown', event => { if(event.key === 'Escape'){ const focused=home.contains(document.activeElement); close(); if(focused) toggle.focus(); } });
+    window.buildSectionsMenu();
+  });
+})();
