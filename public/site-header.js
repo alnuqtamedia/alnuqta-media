@@ -3,6 +3,14 @@
   document.addEventListener('DOMContentLoaded', () => {
     const header = document.querySelector('.site-header');
     if (!header) return;
+    if(document.documentElement.lang === 'en') {
+      const labels={'الرئيسية':'Home','مقالات الرأي':'Opinion Articles','تقارير':'Reports','التحقيقات':'Investigations','الوثائق':'Documents','الأرشيف':'Archive','عن المنصة':'About us','إرسال معلومة':'Submit a tip'};
+      header.querySelectorAll('a').forEach(link=>{if(labels[link.textContent.trim()])link.textContent=labels[link.textContent.trim()];});
+      header.querySelector('.site-brand').innerHTML='Alnuqta <span>Media</span>';
+      header.querySelector('nav').setAttribute('aria-label','Main navigation');
+      header.querySelector('.site-mobile-toggle').setAttribute('aria-label','Open navigation menu');
+      header.querySelector('[data-sections-toggle]').setAttribute('aria-label','Show sections');
+    }
     const mobile = header.querySelector('.site-mobile-toggle');
     const toggle = header.querySelector('[data-sections-toggle]');
     const home = header.querySelector('.home-menu');
