@@ -51,6 +51,7 @@
   }
   function showError(error){console.warn('Supabase public feed unavailable.',error);const section=latestSection();if(section)section.innerHTML='<div class="bg-navy-card border border-navy-light rounded-xl p-7 text-center" role="status"><p class="text-gray-300">تعذر تحميل أحدث المواد الآن.</p><a href="newsroom.html" class="inline-block mt-4 text-red-300 font-bold">فتح غرفة الأخبار ←</a></div>';}
   if(!url||!key){showError(new Error('Missing public feed configuration'));return;}
-  const endpoint=`${url.replace(/\/$/,'')}/rest/v1/articles?select=*&status=eq.published`;
-  fetch(endpoint,{headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json'},cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`Supabase feed request failed: ${response.status}`);return response.json();}).then(rows => window.ALNUQTA_I18N?.articles(rows) || rows).then(render).catch(showError);
+  const endpoint=`${url.replace(/\/$/,'')}/rest/v1/articles?select=id,title,subtitle,excerpt,category,section,cover_image_url,image,gallery,published_at,created_at,updated_at,reading_time&status=eq.published&order=published_at.desc.nullslast,id.desc`;
+  const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);
+  fetch(endpoint,{signal:controller.signal,headers:{apikey:key,Authorization:`Bearer ${key}`,Accept:'application/json'},cache:'no-store'}).then(response=>{if(!response.ok)throw new Error(`Supabase feed request failed: ${response.status}`);return response.json();}).then(rows => window.ALNUQTA_I18N?.articles(rows,{summaryOnly:true}) || rows).then(render).catch(showError).finally(()=>clearTimeout(timer));
 })();

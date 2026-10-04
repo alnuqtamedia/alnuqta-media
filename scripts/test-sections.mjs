@@ -11,7 +11,7 @@ async function feed(rows,fail=false){
  const nodes={ 'homepage-feed':{innerHTML:''},'homepage-ticker':{innerHTML:'',hidden:true},'homepage-featured':{innerHTML:''}};
  const win={...window,ALNUQTA_SUPABASE_PUBLIC:{url:'https://fixture.test',anonKey:'public'}};
  let calls=0;
- const ctx={window:win,URL,document:{getElementById:id=>nodes[id],querySelector:()=>nodes['homepage-featured']},location:{href:'https://example.test/'},console:{warn(){}},fetch:async()=>{calls++;return {ok:!fail,status:503,json:async()=>rows}}};
+ const ctx={window:win,URL,AbortController,setTimeout,clearTimeout,document:{getElementById:id=>nodes[id],querySelector:()=>nodes['homepage-featured']},location:{href:'https://example.test/'},console:{warn(){}},fetch:async endpoint=>{assert.ok(!new URL(endpoint).searchParams.get('select').split(',').includes('body'));calls++;return {ok:!fail,status:503,json:async()=>rows}}};
  vm.runInNewContext(feedSource,ctx);await new Promise(resolve=>setImmediate(resolve));return {nodes,calls};
 }
 const posts=[{id:'hero',category:'politics',title:'Hero',published_at:'2026-10-04'},{id:'next',category:'politics',title:'Next',published_at:'2026-10-03'},...Array.from({length:5},(_,i)=>({id:`e${i}`,category:'economy-public-money',title:i===0?'<script>alert(1)</script>':`Economy ${i}`,published_at:`2026-09-${25-i}`}))];
