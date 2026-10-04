@@ -4,7 +4,7 @@ const file = 'index.html';
 const markers = [
   '<script src="public/sections.js?v=20261004-1"></script>',
   '<script src="public/supabase-public-config.js"></script>',
-  '<script src="public/supabase-feed.js?v=20261004-1"></script>',
+  '<script src="public/supabase-feed.js?v=20261004-3"></script>',
   '<script src="public/homepage-navigation.js"></script>'
 ];
 const html = fs.readFileSync(file, 'utf8');

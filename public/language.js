@@ -86,20 +86,21 @@
       }
     });
   }
-  window.ALNUQTA_I18N = {language, translate, async articles(rows) {
+  window.ALNUQTA_I18N = {language, translate, async articles(rows, {summaryOnly=false}={}) {
     if (language !== 'en' || !rows.length) return rows;
     const config = window.ALNUQTA_SUPABASE_PUBLIC || {};
+    const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),15000);
     try {
       const url = new URL(config.url + '/rest/v1/article_translations');
-      url.searchParams.set('select','*'); url.searchParams.set('language','eq.en'); url.searchParams.set('status','eq.published');
-      const response = await fetch(url, {headers:{apikey:config.anonKey,Authorization:`Bearer ${config.anonKey}`}});
+      url.searchParams.set('select',summaryOnly?'article_id,status,language,source_updated_at,title,subtitle,excerpt':'*'); url.searchParams.set('language','eq.en'); url.searchParams.set('status','eq.published');
+      const response = await fetch(url, {signal:controller.signal,headers:{apikey:config.anonKey,Authorization:`Bearer ${config.anonKey}`}});
       if (!response.ok) throw new Error('Translations unavailable');
       const versions = await response.json();
       return rows.map(row => {
         const version = versions.find(v => v.status === 'published' && v.language === 'en' && v.article_id === row.id && Date.parse(v.source_updated_at) === Date.parse(row.updated_at));
-        return version ? {...row,...Object.fromEntries(['title','subtitle','excerpt','body','methodology','right_of_reply','cover_image_caption','cover_image_credit'].map(field => [field,version[field]])),translation_available:true} : {...row,translation_available:false};
+        return version ? {...row,...Object.fromEntries(['title','subtitle','excerpt','body','methodology','right_of_reply','cover_image_caption','cover_image_credit'].filter(field=>Object.hasOwn(version,field)).map(field => [field,version[field]])),translation_available:true} : {...row,translation_available:false};
       });
-    } catch (error) { console.warn(error.message); return rows.map(row=>({...row,translation_available:false})); }
+    } catch (error) { console.warn(error.message); return rows.map(row=>({...row,translation_available:false})); } finally {clearTimeout(timer);}
   }};
   document.addEventListener('DOMContentLoaded', () => {
     const targets = Array.from(document.querySelectorAll('header nav'));

@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 const source=fs.readFileSync('public/language.js','utf8');
 function setup(search,stored,versions,ok=true) {
  const document={documentElement:{},addEventListener(){}};
- const context={URL,URLSearchParams,document,location:{search},localStorage:{getItem:()=>stored},console,window:{ALNUQTA_SUPABASE_PUBLIC:{url:'https://example.supabase.co',anonKey:'public'}},fetch:async()=>({ok,json:async()=>versions})};
+ const context={URL,URLSearchParams,AbortController,setTimeout,clearTimeout,document,location:{search},localStorage:{getItem:()=>stored},console,window:{ALNUQTA_SUPABASE_PUBLIC:{url:'https://example.supabase.co',anonKey:'public'}},fetch:async url=>{context.lastRequest=String(url);return {ok,json:async()=>versions}}};
  vm.runInNewContext(source,context);return context;
 }
 const row={id:'article-1',title:'Arabic title',body:'Original body',status:'published',updated_at:'2026-09-30T00:00:00Z'};
@@ -24,3 +24,10 @@ assert.equal(en.window.ALNUQTA_I18N.translate('عدد المواد: 9'),'Article
 assert.equal(en.window.ALNUQTA_I18N.translate(' · ثقافة وفنون'),' · Culture and arts');
 assert.equal(en.window.ALNUQTA_I18N.translate('قراءة English title'),'Read English title');
 console.log('Language checks passed: source preserved, approved current versions only, URL preference, API failure fallback.');
+
+const {body:omittedBody,...summaryVersion}=version;
+const summary=setup('?lang=en',null,[summaryVersion]);
+const [summaryResult]=await summary.window.ALNUQTA_I18N.articles([row],{summaryOnly:true});
+assert.equal(summaryResult.title,'English title');assert.equal(summaryResult.body,row.body);
+assert.equal(new URL(summary.lastRequest).searchParams.get('select').includes('body'),false);
+assert.equal(new URL(en.lastRequest).searchParams.get('select'),'*');
