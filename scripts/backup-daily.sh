@@ -32,6 +32,7 @@ docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$
 docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$PGDATABASE" "$@"' sh -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(t)), '[]'::json) FROM public.article_translations t" > "$work/payload/translations.json"
 docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$PGDATABASE" "$@"' sh -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(r)), '[]'::json) FROM newsroom_private.content_revisions r" > "$work/payload/revisions.json"
 # Validate the actual bytes against the database's object inventory; abort on omissions.
+python3 scripts/backup-external-media.py "$work/payload"
 python3 scripts/backup-package.py "$work/payload" "$work/backup.zip"
 python3 scripts/backup-verify.py "$work/backup.zip"
 age -r "$BACKUP_AGE_RECIPIENT" -o "$work/backup.zip.age" "$work/backup.zip"
@@ -54,3 +55,9 @@ aws --endpoint-url "$B2_ENDPOINT" s3api get-object --bucket "$B2_BUCKET" --key "
 echo "Encrypted ZIP upload, 30-day Compliance lock and download checksum verified."
 python3 scripts/backup-preserve.py "$work/payload"
 echo "This is not a full restore test."
+python3 - "$work/payload/external-media.json" <<'COVERAGE'
+import json, sys
+if not json.load(open(sys.argv[1]))['complete_for_scope']:
+    print('::error::Backup uploaded, but external image coverage is incomplete; inspect the encrypted coverage report.')
+    sys.exit(1)
+COVERAGE
