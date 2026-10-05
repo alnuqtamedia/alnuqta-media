@@ -3,6 +3,9 @@ import importlib.util
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
+from datetime import datetime, timezone
+from urllib.error import HTTPError
 import zipfile
 from pathlib import Path
 
@@ -96,6 +99,30 @@ class BackupTests(unittest.TestCase):
         for url in ['http://images.pexels.com/a','https://127.0.0.1/a','https://images.pexels.com@localhost/a']:
             with self.assertRaises(ValueError): external.download(url)
         self.assertIsNone(external.NoRedirect().redirect_request(None,None,302,'',{},'https://localhost'))
+    def test_provider_retry_after_seconds_and_date(self):
+        self.assertEqual(external.retry_delay({'Retry-After':'12'}),12)
+        now=datetime(2026,10,5,15,0,0,tzinfo=timezone.utc)
+        self.assertEqual(external.retry_delay({'Retry-After':'Mon, 05 Oct 2026 15:00:20 GMT'},now),20)
+        self.assertIsNone(external.retry_delay({'Retry-After':'90'}))
+        self.assertIsNone(external.retry_delay({'Retry-After':'invalid'}))
+    def test_rate_limit_retries_once_after_provider_delay(self):
+        error=HTTPError('https://upload.wikimedia.org/a',429,'Limited',{'Retry-After':'12'},None)
+        with patch.object(external,'download_once',side_effect=[error,(b'image','image/jpeg')]) as fetch, patch.object(external.time,'sleep') as sleep:
+            self.assertEqual(external.download('https://upload.wikimedia.org/a'),(b'image','image/jpeg'))
+            sleep.assert_called_once_with(12)
+            self.assertEqual(fetch.call_count,2)
+    def test_long_cooldown_is_not_shortened(self):
+        error=HTTPError('https://upload.wikimedia.org/a',429,'Limited',{'Retry-After':'90'},None)
+        with patch.object(external,'download_once',side_effect=error) as fetch, patch.object(external.time,'sleep') as sleep:
+            with self.assertRaises(HTTPError): external.download('https://upload.wikimedia.org/a')
+            sleep.assert_not_called()
+            self.assertEqual(fetch.call_count,1)
+    def test_second_rate_limit_stops(self):
+        error=HTTPError('https://upload.wikimedia.org/a',429,'Limited',{'Retry-After':'1'},None)
+        with patch.object(external,'download_once',side_effect=error) as fetch, patch.object(external.time,'sleep') as sleep:
+            with self.assertRaises(HTTPError): external.download('https://upload.wikimedia.org/a')
+            self.assertEqual(fetch.call_count,2)
+            sleep.assert_called_once_with(1)
     def test_gallery_credit_and_duplicate_references(self):
         refs=external.references([{'id':'a','image':'https://images.pexels.com/a','cover_image_url':'https://images.pexels.com/a','cover_image_credit':'cover','gallery':[{'url':'https://images.pexels.com/b','credit':'gallery'}]}])
         self.assertEqual(len(refs['https://images.pexels.com/a']),1)
