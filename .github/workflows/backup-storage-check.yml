@@ -1,0 +1,80 @@
+name: Backup storage connection check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    if: github.ref == 'refs/heads/main'
+    environment: Backblaze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Verify source access and destination round trip
+        env:
+          SOURCE_S3_ENDPOINT: ${{ vars.SOURCE_S3_ENDPOINT }}
+          SOURCE_S3_REGION: ${{ vars.SOURCE_S3_REGION }}
+          SOURCE_S3_ACCESS_KEY: ${{ secrets.SOURCE_S3_ACCESS_KEY }}
+          SOURCE_S3_SECRET_KEY: ${{ secrets.SOURCE_S3_SECRET_KEY }}
+          B2_ENDPOINT: ${{ vars.B2_ENDPOINT }}
+          B2_REGION: ${{ vars.B2_REGION }}
+          B2_BUCKET: ${{ vars.B2_BUCKET }}
+          B2_ARCHIVE_BUCKET: ${{ vars.B2_ARCHIVE_BUCKET }}
+          B2_ACCESS_KEY: ${{ secrets.B2_ACCESS_KEY }}
+          B2_SECRET_KEY: ${{ secrets.B2_SECRET_KEY }}
+        run: |
+          python3 - <<'PY'
+          import os, subprocess, sys, json, tempfile, pathlib, uuid, hashlib
+          from urllib.parse import urlsplit
+          required = ("SOURCE_S3_ENDPOINT", "SOURCE_S3_REGION", "SOURCE_S3_ACCESS_KEY",
+                      "SOURCE_S3_SECRET_KEY", "B2_ENDPOINT", "B2_REGION", "B2_BUCKET",
+                      "B2_ARCHIVE_BUCKET", "B2_ACCESS_KEY", "B2_SECRET_KEY")
+          missing = [key for key in required if not os.environ.get(key)]
+          if missing:
+              print("MISSING_CONFIGURATION: " + ", ".join(missing)); sys.exit(1)
+          for key in ("SOURCE_S3_ENDPOINT", "B2_ENDPOINT"):
+              uri = urlsplit(os.environ[key])
+              if uri.scheme != "https" or uri.username or uri.password:
+                  print("ENDPOINT_INVALID"); sys.exit(1)
+          def call(stage, source, args):
+              env = os.environ.copy()
+              prefix = "SOURCE_S3" if source else "B2"
+              env["AWS_ACCESS_KEY_ID"] = env[prefix + ("_ACCESS_KEY" if source else "_ACCESS_KEY")]
+              env["AWS_SECRET_ACCESS_KEY"] = env[prefix + "_SECRET_KEY"]
+              env["AWS_DEFAULT_REGION"] = env[prefix + "_REGION"]
+              env["AWS_EC2_METADATA_DISABLED"] = "true"
+              env["AWS_MAX_ATTEMPTS"] = "1"
+              env["AWS_PAGER"] = ""
+              try:
+                  result = subprocess.run(["aws", "--endpoint-url", env[prefix + "_ENDPOINT"],
+                      "--cli-connect-timeout", "15", "--cli-read-timeout", "30",
+                      "s3api"] + args, env=env, capture_output=True, text=True, timeout=45)
+              except (subprocess.TimeoutExpired, FileNotFoundError):
+                  print(stage + ": CLIENT_OR_TIMEOUT_FAILURE"); sys.exit(1)
+              if result.returncode:
+                  err = result.stderr
+                  safe = next((code for code in ("InvalidAccessKeyId", "SignatureDoesNotMatch",
+                      "AccessDenied", "NoSuchBucket", "ExpiredToken", "InvalidToken",
+                      "AuthorizationHeaderMalformed", "NotImplemented") if code in err), "REQUEST_FAILED")
+                  print(stage + ": " + safe); sys.exit(1)
+              return result.stdout
+          source = json.loads(call("SOURCE_LIST", True, ["list-buckets", "--output", "json"]))
+          print("SOURCE_ACCESS_OK: bucket_count=" + str(len(source.get("Buckets", []))))
+          for bucket in (os.environ["B2_BUCKET"], os.environ["B2_ARCHIVE_BUCKET"]):
+              call("DESTINATION_LIST", False, ["list-objects-v2", "--bucket", bucket,
+                  "--max-keys", "1", "--output", "json"])
+          print("DESTINATION_ACCESS_OK: both buckets accessible")
+          with tempfile.TemporaryDirectory() as directory:
+              fixture = pathlib.Path(directory) / "probe.txt"
+              fetched = pathlib.Path(directory) / "download.txt"
+              fixture.write_bytes(b"Alnuqta backup connectivity probe. No editorial data.\n")
+              key = "alnuqta-backup-probes/" + str(uuid.uuid4()) + ".txt"
+              call("DESTINATION_UPLOAD", False, ["put-object", "--bucket", os.environ["B2_BUCKET"],
+                  "--key", key, "--body", str(fixture), "--output", "json"])
+              call("DESTINATION_DOWNLOAD", False, ["get-object", "--bucket", os.environ["B2_BUCKET"],
+                  "--key", key, str(fetched)])
+              if hashlib.sha256(fixture.read_bytes()).digest() != hashlib.sha256(fetched.read_bytes()).digest():
+                  print("ROUND_TRIP_HASH_MISMATCH"); sys.exit(1)
+              print("ROUND_TRIP_OK: SHA-256 matched; tiny probe retained, no delete attempted.")
+          print("STORAGE_CHECK_OK: full backup and recovery remain untested.")
+          PY
