@@ -38,6 +38,7 @@ def preserve(root):
     listing = json.loads(subprocess.check_output(base + ['list-objects-v2', '--bucket', bucket, '--prefix', 'editorial/']))
     known = {item['Key'] for item in listing.get('Contents', [])}
     count = 0
+    reused = 0
     with tempfile.TemporaryDirectory() as directory:
         plain = Path(directory) / 'record'
         encrypted = Path(directory) / 'record.age'
@@ -45,6 +46,18 @@ def preserve(root):
         for kind, value in records(root):
             key = f'editorial/{kind}/{sha256(value)}.age'
             if key in known:
+                head = json.loads(subprocess.check_output(base + ['head-object', '--bucket', bucket, '--key', key]))
+                version = head['VersionId']
+                digest = head.get('Metadata', {}).get('sha256', '')
+                retention = json.loads(subprocess.check_output(base + ['get-object-retention', '--bucket', bucket,
+                    '--key', key, '--version-id', version]))['Retention']
+                if retention.get('Mode') != 'COMPLIANCE' or datetime.fromisoformat(retention['RetainUntilDate'].replace('Z', '+00:00')) <= datetime.now(timezone.utc):
+                    raise ValueError('Existing preservation object is not under an active Compliance lock')
+                subprocess.run(base + ['get-object', '--bucket', bucket, '--key', key, '--version-id', version,
+                    str(roundtrip)], check=True, stdout=subprocess.DEVNULL)
+                if not digest or sha256(roundtrip) != digest:
+                    raise ValueError('Existing preservation roundtrip mismatch')
+                reused += 1
                 continue
             source = value if isinstance(value, Path) else plain
             if not isinstance(value, Path):
@@ -52,7 +65,7 @@ def preserve(root):
             encrypted.unlink(missing_ok=True)
             subprocess.run(['age', '-r', os.environ['BACKUP_AGE_RECIPIENT'], '-o', str(encrypted), str(source)], check=True)
             digest = sha256(encrypted)
-            until = (datetime.now(timezone.utc) + timedelta(days=365)).isoformat()
+            until = (datetime.now(timezone.utc) + timedelta(days=365, seconds=1)).replace(microsecond=0).isoformat()
             result = json.loads(subprocess.check_output(base + ['put-object', '--bucket', bucket, '--key', key,
                 '--body', str(encrypted), '--metadata', 'sha256=' + digest, '--object-lock-mode', 'COMPLIANCE',
                 '--object-lock-retain-until-date', until]))
@@ -60,14 +73,14 @@ def preserve(root):
             retention = json.loads(subprocess.check_output(base + ['get-object-retention', '--bucket', bucket,
                 '--key', key, '--version-id', version]))['Retention']
             if retention['Mode'] != 'COMPLIANCE' or datetime.fromisoformat(retention['RetainUntilDate'].replace('Z', '+00:00')) < datetime.fromisoformat(until):
-                raise ValueError('Preservation lock verification failed')
+                raise ValueError('Preservation lock verification failed: requested=' + until + '; actual=' + str(retention))
             subprocess.run(base + ['get-object', '--bucket', bucket, '--key', key, '--version-id', version,
                 str(roundtrip)], check=True, stdout=subprocess.DEVNULL)
             if sha256(roundtrip) != digest:
                 raise ValueError('Preservation roundtrip mismatch')
             known.add(key)
             count += 1
-    print(f'Preservation: {count} new encrypted objects verified; no deletion performed.')
+    print(f'Preservation: {count} new encrypted objects verified; {reused} existing objects reverified; no deletion performed.')
 
 
 if __name__ == '__main__':
