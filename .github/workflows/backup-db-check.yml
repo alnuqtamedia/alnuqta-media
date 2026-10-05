@@ -51,7 +51,7 @@ jobs:
               print("DATABASE_CONNECTION_OK: TLS enabled; read-only SELECT 1 passed. No data changed.")
           else:
               err = result.stderr.lower()
-              for marker in ("password", "authentication", "sasl", "ssl", "certificate", "invalid", "fatal", "no password", "no pg_hba", "network", "docker", "role", "database", "unsupported", "option"):
+              for marker in ("password", "authentication", "sasl", "ssl", "certificate", "invalid", "fatal", "no password", "no pg_hba", "network", "docker", "role", "database", "unsupported", "option", "server closed", "unexpected", "eof", "no response", "reset", "terminated", "refused", "timeout", "could not", "no such", "permission", "error", "psql"):
                   print("error_indicator_" + marker.replace(" ", "_") + "=" + str(marker in err).lower())
               print("client_exit_code=" + str(result.returncode))
               category = ("AUTHENTICATION_FAILED" if "password authentication failed" in err
