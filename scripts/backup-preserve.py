@@ -30,12 +30,18 @@ def sha256(value):
     return hashlib.sha256(value).hexdigest()
 
 
+def preservation_prefix(recipient):
+    # Deduplicate only within a recipient generation; old keys may be unrecoverable.
+    return 'editorial/key-' + hashlib.sha256(recipient.encode('ascii')).hexdigest() + '/'
+
+
 def preserve(root):
     bucket = os.environ['B2_ARCHIVE_BUCKET']
     if bucket == os.environ['B2_BUCKET']:
         raise ValueError('Preservation must use a separate bucket without expiry rules')
     base = ['aws', '--endpoint-url', os.environ['B2_ENDPOINT'], '--output', 'json', 's3api']
-    listing = json.loads(subprocess.check_output(base + ['list-objects-v2', '--bucket', bucket, '--prefix', 'editorial/']))
+    prefix = preservation_prefix(os.environ['BACKUP_AGE_RECIPIENT'])
+    listing = json.loads(subprocess.check_output(base + ['list-objects-v2', '--bucket', bucket, '--prefix', prefix]))
     known = {item['Key'] for item in listing.get('Contents', [])}
     count = 0
     reused = 0
@@ -44,7 +50,7 @@ def preserve(root):
         encrypted = Path(directory) / 'record.age'
         roundtrip = Path(directory) / 'roundtrip.age'
         for kind, value in records(root):
-            key = f'editorial/{kind}/{sha256(value)}.age'
+            key = f'{prefix}{kind}/{sha256(value)}.age'
             if key in known:
                 head = json.loads(subprocess.check_output(base + ['head-object', '--bucket', bucket, '--key', key]))
                 version = head['VersionId']
