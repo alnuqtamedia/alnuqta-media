@@ -41,8 +41,8 @@ jobs:
           try:
               result = subprocess.run(
                   ["docker", "run", "--rm", "-e", "PGDATABASE", "-e", "PGCONNECT_TIMEOUT",
-                   "-e", "PGOPTIONS", "postgres:17.6", "psql", "-X", "-w",
-                   "-v", "ON_ERROR_STOP=1", "-At", "-c", "SELECT 1"],
+                   "-e", "PGOPTIONS", "postgres:17.6", "sh", "-c",
+                   'exec psql --dbname="$PGDATABASE" -X -w -v ON_ERROR_STOP=1 -At -c "SELECT 1"'],
                   capture_output=True, text=True, timeout=40)
           except subprocess.TimeoutExpired:
               print("CONNECTION_TIMEOUT")
