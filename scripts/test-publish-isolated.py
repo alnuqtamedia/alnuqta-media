@@ -23,7 +23,7 @@ try:
  CREATE FUNCTION auth.jwt() RETURNS jsonb LANGUAGE sql AS $$ SELECT jsonb_build_object('aal',current_setting('test.aal',true)) $$;
  CREATE FUNCTION public.current_user_role() RETURNS text LANGUAGE sql AS $$ SELECT current_setting('test.role',true) $$;
  CREATE TABLE public.articles(id int PRIMARY KEY,status text,title text,body text,category text,section text,sources jsonb,videos jsonb,cover_image_url text,image text,cover_image_credit text,published_at timestamptz);
- """+'\n'.join(config['functions'])+'\n'+';\n'.join(config['triggers'])+';'
+ """+';\n'.join(config['functions'])+';\n'+';\n'.join(config['triggers'])+';'
  execute(setup)
  cases=[('owner_aal2_insert','owner','aal2',True,False),('owner_aal1_insert','owner','aal1',False,False),('editor_aal2_insert','editor','aal2',False,False),('writer_aal2_insert','writer','aal2',False,False),('editor_aal2_update','editor','aal2',False,True),('writer_aal2_update','writer','aal2',False,True),('owner_aal2_update','owner','aal2',True,True)]
  failures=[]
