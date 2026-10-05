@@ -14,6 +14,7 @@ def module(name, filename):
 
 pack = module('pack', 'backup-package.py')
 check = module('check', 'backup-verify.py')
+preserve = module('preserve', 'backup-preserve.py')
 
 class BackupTests(unittest.TestCase):
     def setUp(self):
@@ -33,6 +34,14 @@ class BackupTests(unittest.TestCase):
             for name, data in records:
                 name, data = transform(name, data)
                 z.writestr(name, data)
+    def test_key_rotation_does_not_reuse_lost_key_records(self):
+        old = preserve.preservation_prefix('old-test-recipient')
+        new = preserve.preservation_prefix('new-test-recipient')
+        record = 'articles/same-content-hash.age'
+        self.assertNotEqual(old, new)
+        self.assertFalse((new + record).startswith(old))
+        self.assertEqual(new, preserve.preservation_prefix('new-test-recipient'))
+        self.assertTrue(new.startswith('editorial/key-'))
     def test_roundtrip_and_repackage(self):
         self.make()
         self.assertEqual(check.verify(self.zip), len(check.REQUIRED))
