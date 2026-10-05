@@ -123,6 +123,40 @@ class BackupTests(unittest.TestCase):
             with self.assertRaises(HTTPError): external.download('https://upload.wikimedia.org/a')
             self.assertEqual(fetch.call_count,2)
             sleep.assert_called_once_with(1)
+    def test_duplicate_zip_entry_rejected(self):
+        self.make()
+        with zipfile.ZipFile(self.zip,'a') as z: z.writestr('database.dump',b'test')
+        with self.assertRaises(ValueError): check.verify(self.zip)
+    def test_duplicate_manifest_key_rejected(self):
+        self.make()
+        self.rewrite(lambda n,b:(n,b'{"database.dump":{},"database.dump":{}}' if n=='manifest.json' else b))
+        with self.assertRaises(ValueError): check.verify(self.zip)
+    def test_manifest_size_tampering_rejected(self):
+        self.make()
+        def change(n,b):
+            if n=='manifest.json':
+                m=json.loads(b);m['database.dump']['bytes']+=1;b=json.dumps(m).encode()
+            return n,b
+        self.rewrite(change)
+        with self.assertRaises(ValueError): check.verify(self.zip)
+    def test_required_dump_missing_rejected(self):
+        self.make()
+        with zipfile.ZipFile(self.zip) as z: rows=[(n,z.read(n)) for n in z.namelist() if n!='database.dump']
+        with zipfile.ZipFile(self.zip,'w') as z:
+            for n,b in rows:z.writestr(n,b)
+        with self.assertRaises(ValueError): check.verify(self.zip)
+    def test_storage_size_mismatch_rejected(self):
+        image=self.root/'storage'/'newsroom-media'/'photo.jpg';image.parent.mkdir(parents=True);image.write_bytes(b'photo')
+        (self.root/'objects.json').write_text(json.dumps([{'bucket_id':'newsroom-media','name':'photo.jpg','metadata':{'size':9}}]))
+        with self.assertRaises(ValueError): self.make()
+    def test_external_preservation_escape_rejected(self):
+        (self.root/'external-media.json').write_text(json.dumps({'records':[{'captured':True,'path':'database.dump','sha256':preserve.sha256(self.root/'database.dump')}]}))
+        with self.assertRaises(ValueError): list(preserve.external_records(self.root))
+    def test_unrelated_http_error_not_retried(self):
+        error=HTTPError('https://upload.wikimedia.org/a',403,'Forbidden',{},None)
+        with patch.object(external,'download_once',side_effect=error) as fetch,patch.object(external.time,'sleep') as sleep:
+            with self.assertRaises(HTTPError):external.download('https://upload.wikimedia.org/a')
+            self.assertEqual(fetch.call_count,1);sleep.assert_not_called()
     def test_gallery_credit_and_duplicate_references(self):
         refs=external.references([{'id':'a','image':'https://images.pexels.com/a','cover_image_url':'https://images.pexels.com/a','cover_image_credit':'cover','gallery':[{'url':'https://images.pexels.com/b','credit':'gallery'}]}])
         self.assertEqual(len(refs['https://images.pexels.com/a']),1)
