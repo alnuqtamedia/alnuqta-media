@@ -4,6 +4,7 @@ Source connections are read-only. Destination is a unique networkless Docker
 container without published ports. No owner age identity is requested or used.
 Only counts and stage identifiers may reach public workflow logs.
 """
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -128,8 +129,16 @@ def main():
                 raise RuntimeError('Destination startup timeout')
             run(['docker', 'exec', name, 'psql', '-U', 'postgres', '-Xq', '-v', 'ON_ERROR_STOP=1',
                  '-c', 'CREATE SCHEMA newsroom_private;'])
-            run(['docker', 'cp', str(root / 'database.dump'), name + ':/tmp/database.dump'])
-            run(['docker', 'cp', str(root / 'restore.list'), name + ':/tmp/restore.list'])
+            stage = 'stream-and-verify-private-files'
+            # docker cp cannot write into tmpfs reliably. Stream through the
+            # container process, then verify the actual bytes before restore.
+            for filename in ('database.dump', 'restore.list'):
+                value = (root / filename).read_bytes()
+                run(['docker', 'exec', '-i', name, 'sh', '-c',
+                     'umask 077; cat > "$1"', 'sh', '/tmp/' + filename], input=value)
+                digest = run(['docker', 'exec', name, 'sha256sum', '/tmp/' + filename]).decode().split()[0]
+                if digest != hashlib.sha256(value).hexdigest():
+                    raise ValueError('Temporary file transfer integrity failed')
             stage = 'restore-editorial-tables'
             run(['docker', 'exec', name, 'pg_restore', '-U', 'postgres', '-d', 'postgres',
                  '--exit-on-error', '--single-transaction', '--no-owner', '--no-acl',
