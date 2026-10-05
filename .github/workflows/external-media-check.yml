@@ -1,0 +1,28 @@
+name: External image archive check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    if: github.ref == 'refs/heads/main'
+    environment: Backblaze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Check current external image coverage without uploading private artifacts
+        env:
+          PGDATABASE: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          set -euo pipefail
+          umask 077
+          work=$(mktemp -d)
+          trap 'rm -rf "$work"' EXIT
+          export PGSSLMODE=require PGCONNECT_TIMEOUT=20
+          export PGOPTIONS='-c default_transaction_read_only=on'
+          docker run --rm -e PGDATABASE -e PGSSLMODE -e PGOPTIONS -e PGCONNECT_TIMEOUT postgres:17.6 sh -c 'exec psql --dbname="$PGDATABASE" -XqAtw -v ON_ERROR_STOP=1 -c "$1"' sh "SELECT coalesce(json_agg(row_to_json(a)), '[]'::json) FROM (SELECT id,image,cover_image_url,cover_image_credit,cover_image_caption,gallery FROM public.articles) a" > "$work/articles.json"
+          python3 scripts/backup-external-media.py "$work"
+          python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["complete_for_scope"] else 1)' "$work/external-media.json"
