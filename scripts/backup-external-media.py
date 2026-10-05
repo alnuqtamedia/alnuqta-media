@@ -18,16 +18,19 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
 def references(articles):
     found = {}
     for article in articles:
-        values = [article.get('image'), article.get('cover_image_url')]
-        values += [x.get('url') for x in article.get('gallery', []) if isinstance(x, dict)]
-        for url in values:
+        cover = {'credit': article.get('cover_image_credit'), 'caption': article.get('cover_image_caption')}
+        values = [(article.get('image'), cover), (article.get('cover_image_url'), cover)]
+        values += [(x.get('url'), dict(x)) for x in article.get('gallery', []) if isinstance(x, dict)]
+        for url, source_metadata in values:
             if not isinstance(url, str) or not url:
                 continue
             parsed = urllib.parse.urlsplit(url)
             if parsed.hostname == 'zsqvmuqlmtnhndwuqlfy.supabase.co' and parsed.path.startswith('/storage/v1/object/public/'):
                 continue
-            found.setdefault(url, []).append({'article_id': article.get('id'),
-                'credit': article.get('cover_image_credit'), 'caption': article.get('cover_image_caption')})
+            reference = {'article_id': article.get('id'), 'source_metadata': source_metadata}
+            group = found.setdefault(url, [])
+            if reference not in group:
+                group.append(reference)
     return found
 
 def download(url):
