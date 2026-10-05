@@ -21,6 +21,17 @@ def records(root):
     for path in sorted((root / 'storage').rglob('*')):
         if path.is_file():
             yield 'media', path
+    coverage = root / 'external-media.json'
+    if coverage.is_file():
+        yield 'external-media-metadata', coverage.read_bytes()
+        for record in json.loads(coverage.read_text())['records']:
+            if record.get('captured'):
+                path = (root / record['path']).resolve()
+                if not path.is_relative_to((root / 'external-media').resolve()) or not path.is_file():
+                    raise ValueError('Missing or unsafe captured external image')
+                if sha256(path) != record['sha256']:
+                    raise ValueError('External media checksum mismatch')
+                yield 'media', path
 
 
 def sha256(value):
