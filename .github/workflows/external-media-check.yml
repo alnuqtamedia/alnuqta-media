@@ -3,6 +3,9 @@ on:
   workflow_dispatch:
 permissions:
   contents: read
+concurrency:
+  group: independent-daily-backup
+  cancel-in-progress: false
 jobs:
   check:
     if: github.ref == 'refs/heads/main'
