@@ -4,12 +4,16 @@ on:
     paths:
       - 'scripts/backup-*'
       - 'scripts/test-backup.py'
+      - 'scripts/b2-sdk-auth-check.py'
+      - 'scripts/test-b2-auth-check.py'
       - '.github/workflows/backup-*.yml'
   push:
     branches: [main]
     paths:
       - 'scripts/backup-*'
       - 'scripts/test-backup.py'
+      - 'scripts/b2-sdk-auth-check.py'
+      - 'scripts/test-b2-auth-check.py'
       - '.github/workflows/backup-*.yml'
 permissions:
   contents: read
@@ -22,5 +26,6 @@ jobs:
         with:
           persist-credentials: false
       - run: python3 scripts/test-backup.py
+      - run: python3 scripts/test-b2-auth-check.py
       - run: bash -n scripts/backup-daily.sh
       - run: python3 -m py_compile scripts/backup-package.py scripts/backup-preserve.py scripts/backup-verify.py
