@@ -11,12 +11,12 @@ trap 'rm -rf "$work"' EXIT
 mkdir -p "$work/payload/storage"
 export PGSSLMODE=require
 image=postgres:17.6
-docker run --rm -e PGDATABASE -e PGSSLMODE "$image" pg_dump --format=custom > "$work/payload/database.dump"
+docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec pg_dump --dbname="$PGDATABASE" --format=custom' > "$work/payload/database.dump"
 docker run --rm -i "$image" pg_restore --list < "$work/payload/database.dump" > /dev/null
 # Global role definitions without passwords; preserve grants in the database dump.
 docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'pg_dumpall --dbname="$PGDATABASE" --roles-only --no-role-passwords' > "$work/payload/roles.sql"
-docker run --rm -e PGDATABASE -e PGSSLMODE "$image" psql -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(b)), '[]'::json) FROM storage.buckets b" > "$work/payload/buckets.json"
-docker run --rm -e PGDATABASE -e PGSSLMODE "$image" psql -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(o)), '[]'::json) FROM storage.objects o" > "$work/payload/objects.json"
+docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$PGDATABASE" "$@"' sh -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(b)), '[]'::json) FROM storage.buckets b" > "$work/payload/buckets.json"
+docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$PGDATABASE" "$@"' sh -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(o)), '[]'::json) FROM storage.objects o" > "$work/payload/objects.json"
 export AWS_ACCESS_KEY_ID="$SOURCE_S3_ACCESS_KEY" AWS_SECRET_ACCESS_KEY="$SOURCE_S3_SECRET_KEY" AWS_DEFAULT_REGION="$SOURCE_S3_REGION"
 python3 - "$work/payload/buckets.json" "$work/payload/storage" <<'PY'
 import json, os, pathlib, subprocess, sys
@@ -28,9 +28,9 @@ for bucket in json.load(open(sys.argv[1])):
     subprocess.run(['aws','--endpoint-url',os.environ['SOURCE_S3_ENDPOINT'],'s3','sync',
                     's3://' + bucket['id'], str(dest), '--only-show-errors'], check=True)
 PY
-docker run --rm -e PGDATABASE -e PGSSLMODE "$image" psql -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(a)), '[]'::json) FROM public.articles a" > "$work/payload/articles.json"
-docker run --rm -e PGDATABASE -e PGSSLMODE "$image" psql -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(t)), '[]'::json) FROM public.article_translations t" > "$work/payload/translations.json"
-docker run --rm -e PGDATABASE -e PGSSLMODE "$image" psql -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(r)), '[]'::json) FROM newsroom_private.content_revisions r" > "$work/payload/revisions.json"
+docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$PGDATABASE" "$@"' sh -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(a)), '[]'::json) FROM public.articles a" > "$work/payload/articles.json"
+docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$PGDATABASE" "$@"' sh -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(t)), '[]'::json) FROM public.article_translations t" > "$work/payload/translations.json"
+docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$PGDATABASE" "$@"' sh -XAt -v ON_ERROR_STOP=1 -c "SELECT coalesce(json_agg(row_to_json(r)), '[]'::json) FROM newsroom_private.content_revisions r" > "$work/payload/revisions.json"
 # Validate the actual bytes against the database's object inventory; abort on omissions.
 python3 scripts/backup-package.py "$work/payload" "$work/backup.zip"
 python3 scripts/backup-verify.py "$work/backup.zip"
