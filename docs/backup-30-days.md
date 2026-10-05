@@ -2,7 +2,7 @@
 
 This replaces weekly/monthly emergency-backup retention proposals. Only the latest 30 days of emergency backups are retained. Nothing deletes live articles, editorial revisions or source images. Independent editorial preservation has a separate bucket and no automatic expiry.
 
-Status (2026-10-05): database and Storage connections verified. First manual emergency export passed the 22-file ZIP integrity check, encryption, upload, 30-day Compliance retention and exact-version download checksum. Long-term preservation passed: 104 new encrypted objects and 10 existing objects verified in run 37301429414. Decryption and a managed-Supabase restore remain untested; scheduled backups stay disabled.
+Status (2026-10-05): the original private encryption identity was lost; the old encrypted generation is not currently recoverable. A replacement identity passed the owner’s local challenge at 12:41 UTC. Its public recipient was saved after GitHub account verification, and replacement run 37312501208 is in progress; no replacement-upload or full-restore success is claimed yet. Database and Storage connections verified. First manual emergency export passed the 22-file ZIP integrity check, encryption, upload, 30-day Compliance retention and exact-version download checksum. Long-term preservation passed: 104 new encrypted objects and 10 existing objects verified in run 37301429414. Decryption and a managed-Supabase restore remain untested; scheduled backups stay disabled.
 
 ## Destination (separate Backblaze B2 account)
 
@@ -26,7 +26,7 @@ Variables: BACKUP_AGE_RECIPIENT (public age recipient only), SOURCE_S3_ENDPOINT,
 
 Create B2_ARCHIVE_BUCKET as a second PRIVATE Object-Lock bucket. It MUST be distinct from B2_BUCKET and MUST have NO automatic expiry rules. New encrypted records/media get a one-year Compliance lock; they remain stored after the lock expires (they are not automatically deleted). Annual protection renewal and an independently administered/offline second copy are still required for ongoing protection; no lifetime immutability claim is made.
 
-The daily collector captures all articles, translations and existing revision rows, including private drafts, into encrypted content-addressed records; do not expose this bucket. Images are stored by content hash and their metadata is retained separately. Unchanged records/images are reused. There is no delete operation. A daily collector is not instant per-publication capture; existing database revision triggers preserve intermediate texts until export, but image versions deleted before a collector run cannot be recovered. Immediate media preservation is a remaining integration requirement.
+The daily collector captures all articles, translations and existing revision rows, including private drafts, into encrypted content-addressed records; do not expose this bucket. Images are stored by content hash and their metadata is retained separately. Unchanged records/images are reused only within the same public-recipient generation. Each generation uses `editorial/key-<SHA256-of-recipient>/`; key rotation re-encrypts unchanged source records instead of reusing objects under a lost identity. There is no delete operation. A daily collector is not instant per-publication capture; existing database revision triggers preserve intermediate texts until export, but image versions deleted before a collector run cannot be recovered. Immediate media preservation is a remaining integration requirement.
 
 Both buckets must be in scope of the upload/read-only B2 application key. The archive bucket needs listFiles/readFiles/writeFiles/readFileRetentions/writeFileRetentions; no deleteFiles or bucket administration.
 
@@ -50,7 +50,7 @@ References:
 
 ## Offline integrity validation (2026-10-03 follow-up)
 
-Run `python3 scripts/test-backup.py`. Eight tests cover ZIP roundtrip, repeated packaging, data corruption, missing media, real media inventory, unsafe paths, unlisted entries, symlinks and nested ZIP output (roundtrip/repackage share one test). These tests need no production credentials or network.
+Run `python3 scripts/test-backup.py`. Nine tests cover recipient-generation separation, ZIP roundtrip, repeated packaging, data corruption, missing media, real media inventory, unsafe paths, unlisted entries, symlinks and nested ZIP output (roundtrip/repackage share one test). These tests need no production credentials or network.
 
 After decrypting an actual backup, run `python3 scripts/backup-verify.py backup.zip` BEFORE extracting or restoring. It verifies exact manifest inventory, required files, SHA256 and Storage sizes without extraction. Failure stops recovery. This verifies the archive bytes; it does not prove PostgreSQL or managed Supabase restoration. The daily runner invokes it before encryption.
 
@@ -63,3 +63,9 @@ The owner received a self-contained `alnuqta-recovery-check.html` tool. Open the
 The tool bundles official `age-encryption@0.3.1` and `fflate@0.8.2`; CSP denies network connections. It supports up to 200 MiB of encrypted input and 512 MiB of decompressed payload; oversized files are rejected before decompression. Its SHA256 is `86ba2f0ef6e87bb5a1d1e64cf96d3ea8aebfe72c05ffc7fdbb4fea25bfbcce6d`.
 
 Tests passed with synthetic identities: compatibility with the previous WebCrypto key generator, age encryption/decryption, wrong-key rejection, corrupt/missing/unsafe ZIP rejection, and the bundled application's key-check/decryption/reset flows. Cloud Browser disallows local-file URLs, so its visual browser preview was not performed. No real owner identity or existing encrypted backup was decrypted by the assistant. A successful local report is not proof of PostgreSQL or managed-Supabase restoration; that isolated recovery rehearsal remains required. Scheduling remains disabled.
+
+## Replacement identity custody (2026-10-05)
+
+The owner’s uploaded `alnuqta-recovery-check.json` reports `keyChallengePassed: true` for `age1uhks3kfzae2rdey68utns908gdypmurxejxmev2tsruv9endry7shqa3rn`, checked at 12:41:06 UTC; `databaseRestored` is false. This proves local challenge decryption, not backup decryption, two independent key copies, or a database restore. The private identity remains with the owner. Original encrypted objects remain untouched, but must not count as recoverable unless their original identity is found. Source data remains available for replacement export.
+
+Use `alnuqta-recovery-check-v2.html` for this identity (SHA256 `a0e1fc7ce2b4adc1b9971e96020793d3169bdd22f5f08276aae2d6d0795c1297`); the older tool targets the lost identity. All nine offline backup tests passed against the current repository scripts after the generation-separation change. The scheduler remains disabled pending actual replacement-backup decryption and isolated recovery validation.
