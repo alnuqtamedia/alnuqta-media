@@ -2,7 +2,7 @@
 
 This replaces weekly/monthly emergency-backup retention proposals. Only the latest 30 days of emergency backups are retained. Nothing deletes live articles, editorial revisions or source images. Independent editorial preservation has a separate bucket and no automatic expiry.
 
-Status: implementation prepared; destination, secrets, lifecycle policy, actual exports and full restore must be configured/tested before enabling. BACKUP_ENABLED defaults to disabled.
+Status (2026-10-05): database and Storage connections verified. First manual emergency export passed the 22-file ZIP integrity check, encryption, upload, 30-day Compliance retention and exact-version download checksum. Long-term preservation validation is in progress. Decryption and a managed-Supabase restore remain untested; scheduled backups stay disabled.
 
 ## Destination (separate Backblaze B2 account)
 
@@ -20,7 +20,7 @@ Use the existing environment `Backblaze`, restrict it to the default branch, pro
 
 Secrets: BACKUP_DATABASE_URL (direct or session-pooler Postgres URL, never transaction pooler), SOURCE_S3_ACCESS_KEY, SOURCE_S3_SECRET_KEY (Supabase Storage S3 credentials), B2_ACCESS_KEY, B2_SECRET_KEY. Use the GitHub environment secrets interface; never paste keys into chat or commit them.
 
-Variables: BACKUP_AGE_RECIPIENT (public age recipient only), SOURCE_S3_ENDPOINT, SOURCE_S3_REGION, B2_ENDPOINT, B2_REGION, B2_BUCKET, B2_ARCHIVE_BUCKET. Set repository BACKUP_ENABLED=true temporarily for the initial manual run; leave the schedule disabled again if verification fails. Save the private age key separately/offline; it never goes into the backup runner. No public workflow artifacts contain the backup.
+Variables: BACKUP_AGE_RECIPIENT (public age recipient only), SOURCE_S3_ENDPOINT, SOURCE_S3_REGION, B2_ENDPOINT, B2_REGION, B2_BUCKET, B2_ARCHIVE_BUCKET. Manual workflow_dispatch runs on main are permitted while scheduling remains disabled. Only set repository BACKUP_ENABLED=true after recovery validation to enable scheduled runs; environment-level variables cannot activate a job-level if condition. Save the private age key separately/offline; it never goes into the backup runner. No public workflow artifacts contain the backup.
 
 ## Long-term editorial preservation
 
@@ -54,4 +54,4 @@ Run `python3 scripts/test-backup.py`. Eight tests cover ZIP roundtrip, repeated 
 
 After decrypting an actual backup, run `python3 scripts/backup-verify.py backup.zip` BEFORE extracting or restoring. It verifies exact manifest inventory, required files, SHA256 and Storage sizes without extraction. Failure stops recovery. This verifies the archive bytes; it does not prove PostgreSQL or managed Supabase restoration. The daily runner invokes it before encryption.
 
-The `Backblaze` environment was verified to contain B2_SETUP_KEY_ID and B2_SETUP_KEY on 2026-10-03. Key provisioning still requires BACKUP_SETUP_GITHUB_TOKEN and both bucket ID variables; no provisioning or backup run is confirmed. The schedule stays disabled; verify first export/upload/download/decryption and managed-Supabase restore before production enablement.
+The Backblaze setup completed with a bucket-scoped non-delete application key on 2026-10-05. Database read-only connection and source/destination Storage roundtrip checks passed. Public age recipient was configured; the private identity stays with the owner. Run 37301021770 exported and verified the emergency backup, then stopped during preservation retention comparison. Whole-second retention timestamps and verification of previously uploaded records were added; run 37301429414 is the follow-up validation. Bootstrap B2 credentials and the temporary GitHub setup token still require cleanup after setup verification. No successful full restore or scheduled backup is claimed.
