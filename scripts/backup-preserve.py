@@ -21,6 +21,10 @@ def records(root):
     for path in sorted((root / 'storage').rglob('*')):
         if path.is_file():
             yield 'media', path
+    yield from external_records(root)
+
+
+def external_records(root):
     coverage = root / 'external-media.json'
     if coverage.is_file():
         yield 'external-media-metadata', coverage.read_bytes()
@@ -46,7 +50,7 @@ def preservation_prefix(recipient):
     return 'editorial/key-' + hashlib.sha256(recipient.encode('ascii')).hexdigest() + '/'
 
 
-def preserve(root):
+def preserve(root, external_only=False):
     bucket = os.environ['B2_ARCHIVE_BUCKET']
     if bucket == os.environ['B2_BUCKET']:
         raise ValueError('Preservation must use a separate bucket without expiry rules')
@@ -60,7 +64,7 @@ def preserve(root):
         plain = Path(directory) / 'record'
         encrypted = Path(directory) / 'record.age'
         roundtrip = Path(directory) / 'roundtrip.age'
-        for kind, value in records(root):
+        for kind, value in (external_records(root) if external_only else records(root)):
             key = f'{prefix}{kind}/{sha256(value)}.age'
             if key in known:
                 head = json.loads(subprocess.check_output(base + ['head-object', '--bucket', bucket, '--key', key]))
@@ -101,4 +105,4 @@ def preserve(root):
 
 
 if __name__ == '__main__':
-    preserve(Path(sys.argv[1]).resolve())
+    preserve(Path(sys.argv[1]).resolve(), external_only='--external-only' in sys.argv[2:])
