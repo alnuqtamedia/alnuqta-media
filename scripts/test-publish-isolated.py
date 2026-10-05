@@ -10,9 +10,9 @@ try:
  os.environ['PGSSLMODE']='require';os.environ['PGCONNECT_TIMEOUT']='20'
  source=['docker','run','--rm','-e','PGDATABASE','-e','PGOPTIONS','-e','PGSSLMODE','-e','PGCONNECT_TIMEOUT',r.IMAGE,'sh','-c']
  run(['docker','pull',r.IMAGE],timeout=240)
- sql="SELECT json_build_object('functions',(SELECT json_agg(pg_get_functiondef(p.oid)) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname IN ('enforce_article_publish_integrity','enforce_article_workflow')),'triggers',(SELECT json_agg(pg_get_triggerdef(t.oid)) FROM pg_trigger t WHERE t.tgrelid='public.articles'::regclass AND t.tgname IN ('enforce_article_publish_integrity_trigger','enforce_article_workflow_trigger')));"
+ sql="SELECT json_build_object('functions',(SELECT json_agg(pg_get_functiondef(p.oid)) FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='public' AND p.proname IN ('enforce_article_publish_integrity','enforce_article_workflow','enforce_article_owner_insert_guard')),'triggers',(SELECT json_agg(pg_get_triggerdef(t.oid)) FROM pg_trigger t WHERE t.tgrelid='public.articles'::regclass AND t.tgname IN ('enforce_article_publish_integrity_trigger','enforce_article_workflow_trigger','enforce_article_owner_insert_guard')));"
  config=json.loads(run(source+['exec psql --dbname="$PGDATABASE" -XqAtw -v ON_ERROR_STOP=1 -c "$1"','sh',sql]))
- if len(config['functions'])!=2 or len(config['triggers'])!=2: raise ValueError('Required guards missing')
+ if len(config['functions'])!=3 or len(config['triggers'])!=3: raise ValueError('Required guards missing')
  run(['docker','run','-d','--name',name,'--network','none','--tmpfs','/var/lib/postgresql/data:rw,size=256m','-e','POSTGRES_HOST_AUTH_METHOD=trust',r.IMAGE])
  for _ in range(45):
   if subprocess.run(['docker','exec',name,'pg_isready','-U','postgres'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL).returncode==0:break
@@ -35,10 +35,7 @@ try:
    try:execute(test);print('PASS '+prefix+label,flush=True)
    except RuntimeError:failures.append(label);print('FAIL '+prefix+label+' expected_permission='+str(allowed).lower(),flush=True)
   return failures
- baseline=matrix('baseline_')
- execute("CREATE FUNCTION public.enforce_article_owner_insert_guard() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.status='published' AND public.current_user_role() IS DISTINCT FROM 'owner' THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Only owner can insert published articles'; END IF; RETURN NEW; END $$; CREATE TRIGGER enforce_article_owner_insert_guard BEFORE INSERT ON public.articles FOR EACH ROW EXECUTE FUNCTION public.enforce_article_owner_insert_guard();")
- candidate=matrix('candidate_')
- failures=baseline+candidate
+ failures=matrix('live_')
  print('SCOPE: exact current trigger/function definitions; mocked role/JWT; isolated database; no source writes. Not a full RLS/Auth or frozen archive restore.',flush=True)
  if failures:raise SystemExit(1)
 finally:
