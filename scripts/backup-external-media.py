@@ -2,6 +2,10 @@
 import hashlib
 import json
 import sys
+import math
+import time
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -10,6 +14,7 @@ from pathlib import Path
 HOSTS = {'upload.wikimedia.org', 'thumb.wikimedia.org', 'images.pexels.com',
          'd1ldvf68ux039x.cloudfront.net', 'assets.the-afc.com'}
 LIMIT = 20 * 1024 * 1024
+USER_AGENT = 'AlnuqtaMediaArchiveBot/1.1 (+https://alnuqtamedia.com)'
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
@@ -33,13 +38,30 @@ def references(articles):
                 group.append(reference)
     return found
 
-def download(url):
+def retry_delay(headers, now=None):
+    value = headers.get('Retry-After')
+    if value is None:
+        return 30
+    try:
+        delay = int(value)
+    except (ValueError, TypeError):
+        try:
+            target = parsedate_to_datetime(value)
+            if target.tzinfo is None:
+                target = target.replace(tzinfo=timezone.utc)
+            delay = math.ceil((target - (now or datetime.now(timezone.utc))).total_seconds())
+        except (ValueError, TypeError, OverflowError):
+            return None
+    # A longer provider cooldown is never shortened to fit this job.
+    return max(1, delay) if delay <= 45 else None
+
+def download_once(url):
     parsed = urllib.parse.urlsplit(url)
     if (parsed.scheme != 'https' or parsed.hostname not in HOSTS or
         parsed.port not in (None, 443) or parsed.username or parsed.password):
         raise ValueError('Unapproved external image origin')
     opener = urllib.request.build_opener(NoRedirect())
-    request = urllib.request.Request(url, headers={'User-Agent': 'AlnuqtaMediaArchive/1.0'})
+    request = urllib.request.Request(url, headers={'User-Agent': USER_AGENT})
     with opener.open(request, timeout=20) as response:
         if response.headers.get_content_type() not in {'image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif'}:
             raise ValueError('Unsupported media content type')
@@ -47,6 +69,20 @@ def download(url):
         if not data or len(data) > LIMIT:
             raise ValueError('External media size limit')
         return data, response.headers.get_content_type()
+
+def download(url):
+    try:
+        return download_once(url)
+    except urllib.error.HTTPError as exc:
+        if exc.code not in (429, 503):
+            raise
+        delay = retry_delay(exc.headers)
+        if delay is None:
+            raise
+        # One bounded, provider-compliant retry; same identity and destination.
+        print('Provider cooldown: waiting_seconds=' + str(delay) + '; retry=1_of_1', flush=True)
+        time.sleep(delay)
+        return download_once(url)
 
 def collect(root, fetch=download):
     root = Path(root)
