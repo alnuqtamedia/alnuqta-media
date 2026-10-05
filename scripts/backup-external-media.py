@@ -69,6 +69,11 @@ def collect(root, fetch=download):
                          sha256=digest, bytes=len(data), mime=mime)
         except Exception as exc:
             entry.update(error_class=type(exc).__name__, http_status=getattr(exc, 'code', None))
+            # Logs reveal only fixed public-provider names and error types,
+            # never article identifiers, private paths or signed query strings.
+            host = urllib.parse.urlsplit(url).hostname
+            print('External image unavailable: provider=' + (host if host in HOSTS else 'unapproved_origin') +
+                  '; error=' + type(exc).__name__ + '; status=' + str(getattr(exc, 'code', None)))
         records.append(entry)
     report = {'scope': 'Current article cover/gallery external images only; not embedded body/document/video URLs',
               'complete_for_scope': all(x['captured'] for x in records), 'records': records}
