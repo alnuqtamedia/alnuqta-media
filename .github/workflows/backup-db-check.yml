@@ -51,6 +51,9 @@ jobs:
               print("DATABASE_CONNECTION_OK: TLS enabled; read-only SELECT 1 passed. No data changed.")
           else:
               err = result.stderr.lower()
+              for marker in ("password", "authentication", "sasl", "ssl", "certificate", "invalid", "fatal", "no password", "no pg_hba", "network", "docker", "role", "database", "unsupported", "option"):
+                  print("error_indicator_" + marker.replace(" ", "_") + "=" + str(marker in err).lower())
+              print("client_exit_code=" + str(result.returncode))
               category = ("AUTHENTICATION_FAILED" if "password authentication failed" in err
                           else "HOST_RESOLUTION_FAILED" if "could not translate host name" in err
                           else "CONNECTION_TIMEOUT" if "timeout" in err
