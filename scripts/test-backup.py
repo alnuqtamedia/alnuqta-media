@@ -15,6 +15,7 @@ def module(name, filename):
 pack = module('pack', 'backup-package.py')
 check = module('check', 'backup-verify.py')
 preserve = module('preserve', 'backup-preserve.py')
+external = module('external', 'backup-external-media.py')
 
 class BackupTests(unittest.TestCase):
     def setUp(self):
@@ -74,6 +75,31 @@ class BackupTests(unittest.TestCase):
         with self.assertRaises(ValueError): self.make()
     def test_output_inside_payload_rejected(self):
         with self.assertRaises(ValueError): pack.package(self.root,self.root/'backup.zip')
+    def test_external_images_archive_roundtrip_and_preservation(self):
+        (self.root/'articles.json').write_text(json.dumps([{'id':'example','image':'https://images.pexels.com/a'}]))
+        report=external.collect(self.root, lambda url: (b'image-bytes','image/jpeg'))
+        self.assertTrue(report['complete_for_scope'])
+        self.make()
+        self.assertEqual(check.verify(self.zip),len(check.REQUIRED)+2)
+        records=list(preserve.records(self.root))
+        self.assertTrue(any(k=='external-media-metadata' for k,v in records))
+        image=self.root/report['records'][0]['path']
+        image.write_bytes(b'changed')
+        with self.assertRaises(ValueError): list(preserve.records(self.root))
+    def test_external_failure_is_not_silently_complete(self):
+        (self.root/'articles.json').write_text(json.dumps([{'id':'example','image':'https://images.pexels.com/a'}]))
+        def fail(url): raise TimeoutError()
+        report=external.collect(self.root,fail)
+        self.assertFalse(report['complete_for_scope'])
+        self.assertFalse(report['records'][0]['captured'])
+    def test_external_origins_and_redirects_are_restricted(self):
+        for url in ['http://images.pexels.com/a','https://127.0.0.1/a','https://images.pexels.com@localhost/a']:
+            with self.assertRaises(ValueError): external.download(url)
+        self.assertIsNone(external.NoRedirect().redirect_request(None,None,302,'',{},'https://localhost'))
+    def test_gallery_credit_and_duplicate_references(self):
+        refs=external.references([{'id':'a','image':'https://images.pexels.com/a','cover_image_url':'https://images.pexels.com/a','cover_image_credit':'cover','gallery':[{'url':'https://images.pexels.com/b','credit':'gallery'}]}])
+        self.assertEqual(len(refs['https://images.pexels.com/a']),1)
+        self.assertEqual(refs['https://images.pexels.com/b'][0]['source_metadata']['credit'],'gallery')
 
 if __name__=='__main__':
     unittest.main()
