@@ -1,0 +1,26 @@
+name: Editorial restore rehearsal
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: editorial-restore-rehearsal
+  cancel-in-progress: false
+jobs:
+  rehearse:
+    if: github.ref == 'refs/heads/main'
+    environment: Backblaze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Restore fresh editorial dump in a networkless temporary database
+        env:
+          PGDATABASE: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: python3 scripts/backup-rehearse.py
+      - name: Scope of this test
+        if: always()
+        run: |
+          echo 'Partial restore of a fresh read-only source snapshot. No private age key, paid project, source writes, public backup artifacts or production destination. Does not certify prior encrypted-backup or full managed-Supabase recovery.' >> "$GITHUB_STEP_SUMMARY"
