@@ -42,7 +42,14 @@ def run(args, **kw):
                             stdout=kw.pop('stdout', subprocess.PIPE),
                             timeout=kw.pop('timeout', 180), **kw)
     if result.returncode:
-        raise RuntimeError('Command failed; private output suppressed')
+        error = result.stderr.decode(errors='replace').lower()
+        markers = ('does not exist', 'already exists', 'permission denied', 'read-only',
+                   'syntax error', 'not-null', 'foreign key', 'invalid input',
+                   'unsupported', 'out of memory', 'no space', 'could not connect',
+                   'cannot insert', 'identity', 'sequence', 'schema', 'function',
+                   'constraint', 'extension', 'connection refused')
+        indicators = ','.join(marker.replace(' ', '_') for marker in markers if marker in error)
+        raise RuntimeError('safe_indicators=' + (indicators or 'unclassified'))
     return result.stdout
 
 def main():
@@ -136,7 +143,9 @@ def main():
                   'elapsed_seconds=' + str(round(time.monotonic() - started)), flush=True)
             print('NOT_TESTED: prior encrypted backup, managed Supabase, RLS/ACL, Auth/MFA, '
                   'Vault secrets, Storage service or full website recovery.', flush=True)
-    except Exception:
+    except Exception as exc:
+        if isinstance(exc, RuntimeError) and str(exc).startswith('safe_indicators='):
+            print(str(exc), flush=True)
         print('REHEARSAL_FAILED_STAGE=' + stage + '; private SQL/data/error output suppressed', flush=True)
         raise SystemExit(1)
     finally:
