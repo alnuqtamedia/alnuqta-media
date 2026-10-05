@@ -26,13 +26,19 @@ try:
  """+';\n'.join(config['functions'])+';\n'+';\n'.join(config['triggers'])+';'
  execute(setup)
  cases=[('owner_aal2_insert','owner','aal2',True,False),('owner_aal1_insert','owner','aal1',False,False),('editor_aal2_insert','editor','aal2',False,False),('writer_aal2_insert','writer','aal2',False,False),('editor_aal2_update','editor','aal2',False,True),('writer_aal2_update','writer','aal2',False,True),('owner_aal2_update','owner','aal2',True,True)]
- failures=[]
- for label,role,aal,allowed,update in cases:
-  action="UPDATE public.articles SET status='published' WHERE id=1;" if update else "INSERT INTO public.articles VALUES(1,'published','Test title','Test body','news','news','[]','[]',NULL,NULL,NULL,NULL);"
-  seed="INSERT INTO public.articles VALUES(1,'draft','Test title','Test body','news','news','[]','[]',NULL,NULL,NULL,NULL);" if update else ''
-  test="BEGIN; SELECT set_config('test.role','owner',true); SELECT set_config('test.aal','aal2',true); "+seed+" SELECT set_config('test.role','"+role+"',true); SELECT set_config('test.aal','"+aal+"',true); DO $test$ DECLARE succeeded boolean:=true; BEGIN BEGIN "+action+" EXCEPTION WHEN OTHERS THEN succeeded:=false; END; IF succeeded IS DISTINCT FROM "+str(allowed).lower()+" THEN RAISE EXCEPTION 'GUARD_MISMATCH'; END IF; END $test$; ROLLBACK;"
-  try:execute(test);print('PASS '+label,flush=True)
-  except RuntimeError:failures.append(label);print('FAIL '+label+' expected_permission='+str(allowed).lower(),flush=True)
+ def matrix(prefix):
+  failures=[]
+  for label,role,aal,allowed,update in cases:
+   action="UPDATE public.articles SET status='published' WHERE id=1;" if update else "INSERT INTO public.articles VALUES(1,'published','Test title','Test body','news','news','[]','[]',NULL,NULL,NULL,NULL);"
+   seed="INSERT INTO public.articles VALUES(1,'draft','Test title','Test body','news','news','[]','[]',NULL,NULL,NULL,NULL);" if update else ''
+   test="BEGIN; SELECT set_config('test.role','owner',true); SELECT set_config('test.aal','aal2',true); "+seed+" SELECT set_config('test.role','"+role+"',true); SELECT set_config('test.aal','"+aal+"',true); DO $test$ DECLARE succeeded boolean:=true; BEGIN BEGIN "+action+" EXCEPTION WHEN OTHERS THEN succeeded:=false; END; IF succeeded IS DISTINCT FROM "+str(allowed).lower()+" THEN RAISE EXCEPTION 'GUARD_MISMATCH'; END IF; END $test$; ROLLBACK;"
+   try:execute(test);print('PASS '+prefix+label,flush=True)
+   except RuntimeError:failures.append(label);print('FAIL '+prefix+label+' expected_permission='+str(allowed).lower(),flush=True)
+  return failures
+ baseline=matrix('baseline_')
+ execute("CREATE FUNCTION public.enforce_article_owner_insert_guard() RETURNS trigger LANGUAGE plpgsql SET search_path=public AS $$ BEGIN IF NEW.status='published' AND public.current_user_role() IS DISTINCT FROM 'owner' THEN RAISE EXCEPTION USING ERRCODE='42501', MESSAGE='Only owner can insert published articles'; END IF; RETURN NEW; END $$; CREATE TRIGGER enforce_article_owner_insert_guard BEFORE INSERT ON public.articles FOR EACH ROW EXECUTE FUNCTION public.enforce_article_owner_insert_guard();")
+ candidate=matrix('candidate_')
+ failures=baseline+candidate
  print('SCOPE: exact current trigger/function definitions; mocked role/JWT; isolated database; no source writes. Not a full RLS/Auth or frozen archive restore.',flush=True)
  if failures:raise SystemExit(1)
 finally:
