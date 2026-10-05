@@ -49,7 +49,12 @@ def run(args, **kw):
                    'cannot insert', 'identity', 'sequence', 'schema', 'function',
                    'constraint', 'extension', 'connection refused')
         indicators = ','.join(marker.replace(' ', '_') for marker in markers if marker in error)
-        raise RuntimeError('safe_indicators=' + (indicators or 'unclassified'))
+        summary = ''
+        if args[:3] == ['docker', 'exec', args[2]] and 'pg_restore' in args:
+            first = next((line for line in error.splitlines() if line.startswith('pg_restore: error:')), '')
+            # Only the first restore error, never Command/COPY context or SQL.
+            summary = re.sub(r'(["\']).*?\1', '[redacted]', first)[:200]
+        raise RuntimeError('safe_indicators=' + (indicators or 'unclassified') + '; ' + summary)
     return result.stdout
 
 def main():
