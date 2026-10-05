@@ -1,4 +1,4 @@
-name: External image archive check
+name: External image archive preservation
 on:
   workflow_dispatch:
 permissions:
@@ -13,9 +13,18 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Check current external image coverage without uploading private artifacts
+      - name: Install encryption tool
+        run: sudo apt-get update -qq && sudo apt-get install -y age
+      - name: Collect and preserve external images without public backup artifacts
         env:
           PGDATABASE: ${{ secrets.BACKUP_DATABASE_URL }}
+          BACKUP_AGE_RECIPIENT: ${{ vars.BACKUP_AGE_RECIPIENT }}
+          B2_ENDPOINT: ${{ vars.B2_ENDPOINT }}
+          B2_BUCKET: ${{ vars.B2_BUCKET }}
+          B2_ARCHIVE_BUCKET: ${{ vars.B2_ARCHIVE_BUCKET }}
+          AWS_DEFAULT_REGION: ${{ vars.B2_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.B2_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.B2_SECRET_KEY }}
         run: |
           set -euo pipefail
           umask 077
@@ -25,4 +34,5 @@ jobs:
           export PGOPTIONS='-c default_transaction_read_only=on'
           docker run --rm -e PGDATABASE -e PGSSLMODE -e PGOPTIONS -e PGCONNECT_TIMEOUT postgres:17.6 sh -c 'exec psql --dbname="$PGDATABASE" -XqAtw -v ON_ERROR_STOP=1 -c "$1"' sh "SELECT coalesce(json_agg(row_to_json(a)), '[]'::json) FROM (SELECT id,image,cover_image_url,cover_image_credit,cover_image_caption,gallery FROM public.articles) a" > "$work/articles.json"
           python3 scripts/backup-external-media.py "$work"
+          python3 scripts/backup-preserve.py "$work" --external-only
           python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1]))["complete_for_scope"] else 1)' "$work/external-media.json"
