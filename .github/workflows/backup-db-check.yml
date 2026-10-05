@@ -1,0 +1,62 @@
+name: Backup database connection check
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  check:
+    if: github.ref == 'refs/heads/main'
+    environment: Backblaze
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Check database with a read-only query
+        env:
+          PGDATABASE: ${{ secrets.BACKUP_DATABASE_URL }}
+        run: |
+          python3 - <<'PY'
+          import os, subprocess, sys
+          from urllib.parse import urlsplit, urlunsplit, parse_qsl, urlencode
+          raw = os.environ.get("PGDATABASE", "")
+          try:
+              parsed = urlsplit(raw)
+              host = parsed.hostname or ""
+              if (parsed.scheme not in ("postgres", "postgresql")
+                  or not host.endswith((".supabase.co", ".pooler.supabase.com"))
+                  or parsed.port != 5432 or not parsed.username or not parsed.password
+                  or "[YOUR-PASSWORD]" in raw or any(c.isspace() for c in raw)):
+                  raise ValueError()
+              query = dict(parse_qsl(parsed.query))
+              query["sslmode"] = "require"
+              os.environ["PGDATABASE"] = urlunsplit(parsed._replace(query=urlencode(query)))
+          except Exception:
+              print("CONFIGURATION_INVALID: use the complete session-pooler URI, port 5432, with an encoded password.")
+              sys.exit(1)
+          pull = subprocess.run(["docker", "pull", "postgres:17.6"], capture_output=True, timeout=120)
+          if pull.returncode:
+              print("CLIENT_SETUP_FAILED")
+              sys.exit(1)
+          os.environ["PGCONNECT_TIMEOUT"] = "15"
+          os.environ["PGOPTIONS"] = "-c default_transaction_read_only=on -c statement_timeout=10000"
+          try:
+              result = subprocess.run(
+                  ["docker", "run", "--rm", "-e", "PGDATABASE", "-e", "PGCONNECT_TIMEOUT",
+                   "-e", "PGOPTIONS", "postgres:17.6", "psql", "-X", "-w",
+                   "-v", "ON_ERROR_STOP=1", "-At", "-c", "SELECT 1"],
+                  capture_output=True, text=True, timeout=40)
+          except subprocess.TimeoutExpired:
+              print("CONNECTION_TIMEOUT")
+              sys.exit(1)
+          if result.returncode == 0 and result.stdout.strip() == "1":
+              print("DATABASE_CONNECTION_OK: TLS enabled; read-only SELECT 1 passed. No data changed.")
+          else:
+              err = result.stderr.lower()
+              category = ("AUTHENTICATION_FAILED" if "password authentication failed" in err
+                          else "HOST_RESOLUTION_FAILED" if "could not translate host name" in err
+                          else "CONNECTION_TIMEOUT" if "timeout" in err
+                          else "CONNECTION_REFUSED" if "connection refused" in err
+                          else "POOLER_USER_OR_PROJECT_INVALID" if "tenant or user not found" in err
+                          else "CONNECTION_FAILED")
+              print(category + ": raw server output suppressed to protect credentials.")
+              sys.exit(1)
+          PY
