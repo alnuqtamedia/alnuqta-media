@@ -8,7 +8,7 @@ const window={};vm.runInNewContext(sectionsSource,{window,document});
 assert.deepEqual(Array.from(window.ALNUQTA_SECTIONS,s=>s.id),['politics','world','economy','iraq','sports','arts','misc']);
 for(const [old,expected] of Object.entries({'economy-public-money':'economy','culture-arts':'arts','field-social':'misc','travel-tourism':'misc','human-stories':'misc','اقتصادي':'economy','سياسي':'politics','رياضي':'sports','unknown':'misc','':'misc'}))assert.equal(window.normalizeCategory(old),expected);
 async function feed(rows,fail=false){
- const nodes={ 'homepage-feed':{innerHTML:''},'homepage-ticker':{innerHTML:'',hidden:true},'homepage-featured':{innerHTML:''}};
+ const nodes=Object.fromEntries(['homepage-feed','homepage-ticker','homepage-featured','homepage-feed-retry'].map(id=>[id,{innerHTML:'',hidden:true,setAttribute(name,value){this[name]=value;}}]));
  const win={...window,ALNUQTA_SUPABASE_PUBLIC:{url:'https://fixture.test',anonKey:'public'}};
  let calls=0;
  const ctx={window:win,URL,AbortController,setTimeout,clearTimeout,document:{getElementById:id=>nodes[id],querySelector:()=>nodes['homepage-featured']},location:{href:'https://example.test/'},console:{warn(){}},fetch:async endpoint=>{assert.ok(!new URL(endpoint).searchParams.get('select').split(',').includes('body'));calls++;return {ok:!fail,status:503,json:async()=>rows}}};
