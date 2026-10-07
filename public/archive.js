@@ -57,7 +57,7 @@
   $('filters').onsubmit=e=>{e.preventDefault();page=1;load()};$('retry').onclick=load;
   $('year').onchange=$('month').onchange=()=>{$('from').value='';$('to').value=''};
   $('from').onchange=$('to').onchange=()=>{$('year').value='';$('month').value=''};
-  $('reset').onclick=()=>{$('filters').reset();page=1;load()};
+  $('reset').onclick=()=>{HTMLFormElement.prototype.reset.call($('filters'));page=1;load()};
   $('previous').onclick=()=>{if(page>1){page--;load();$('results').focus()}};$('next').onclick=()=>{if(page*size<total){page++;load();$('results').focus()}};
   $('share').onclick=async()=>{try{await navigator.clipboard.writeText(location.href);$('share').textContent=en?'Link copied':'تم نسخ الرابط'}catch{$('status').textContent=en?'Copy the address from your browser.':'انسخ الرابط من شريط المتصفح.'}};
   load();
