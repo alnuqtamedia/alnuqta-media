@@ -5,7 +5,17 @@ async function sha256(value: string) {
   const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
-const page = (title: string, text: string, ok = true) => new Response(`<!doctype html><html lang="ar" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>${title}</title><body style="font-family:Arial;background:#071426;color:white;display:grid;place-items:center;min-height:100vh;margin:0"><main style="max-width:560px;padding:32px;border:1px solid #28415e;border-radius:18px;background:#0d2038"><h1 style="color:${ok ? "#59d39a" : "#ef3340"}">${title}</h1><p style="line-height:1.9">${text}</p><a href="https://alnuqtamedia.com/" style="color:#fff">العودة إلى النقطة</a></main></body></html>`, { headers: { "Content-Type": "text/html; charset=utf-8" } });
+// Render the result on the public website: shared Supabase hosts serve HTML as plain text.
+const page = (title: string, _text: string, ok = true) => {
+  const states: Record<string, string> = {
+    "تم تأكيد الاشتراك": "confirmed", "الاشتراك مؤكد": "active",
+    "رابط غير صالح": "invalid", "الرابط منتهي": "expired", "تعذر التأكيد": "error",
+  };
+  return new Response(null, { status: 303, headers: {
+    "Location": `https://alnuqtamedia.com/newsletter-result.html?status=${states[title] || (ok ? "confirmed" : "error")}`,
+    "Cache-Control": "no-store", "Referrer-Policy": "no-referrer",
+  }});
+};
 
 Deno.serve(async (req: Request) => {
   const params = new URL(req.url).searchParams, action = params.get("action"), token = params.get("token") || "";
