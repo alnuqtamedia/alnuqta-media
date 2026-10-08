@@ -1,0 +1,16 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+import {renderArticle} from './build-article-pages.mjs';
+const template=fs.readFileSync('newsroom.html','utf8');
+const p={id:'test-id',status:'published',title:'عنوان <script> & "اقتباس"',body:'المحتوى الأصلي\n\nفقرة ثانية',cover_image_url:'https://example.com/image.jpg',cover_image_credit:'INTERNAL_CREDIT'};
+const html=renderArticle(template,p);
+assert.match(html,/<meta property="og:title" content="عنوان &lt;script&gt; &amp; &quot;اقتباس&quot;">/);
+assert.match(html,/<meta property="og:image" content="https:\/\/example.com\/image.jpg">/);
+assert.match(html,/<meta property="og:url" content="https:\/\/alnuqtamedia.com\/articles\/test-id.html">/);
+assert.match(html,/<div id="article">[\s\S]*المحتوى الأصلي/);
+assert.match(html,/<section id="listing" class="hidden">/);
+assert.match(html,/id="reader" class="max-w-4xl/);
+assert.doesNotMatch(html,/INTERNAL_CREDIT|content="غرفة الأخبار \| النقطة"/);
+assert.throws(()=>renderArticle(template,{...p,status:'draft'}));
+assert.throws(()=>renderArticle(template,{...p,id:'../private'}));
+console.log('PASS: published-only pages, escaped metadata, static content, canonical image and URL, no implicit image credit.');

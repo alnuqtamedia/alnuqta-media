@@ -45,7 +45,7 @@
       if (typeof posts !== 'undefined') {
         posts = data;
         render();
-        const slug = new URLSearchParams(location.search).get('slug');
+        const slug = window.ALNUQTA_ARTICLE_ID||new URLSearchParams(location.search).get('slug');
         if (slug) openPost(slug, false);
       }
     })
