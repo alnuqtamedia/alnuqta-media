@@ -1,0 +1,15 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert/strict'),{webcrypto}=require('crypto');
+const source=fs.readFileSync('supabase/functions/newsletter-unsubscribe/index.ts','utf8').replace(/^import .*;\n/gm,'').replace(/status: number, data: unknown/g,'status, data').replace(/token: string/g,'token').replace(/req: Request/g,'req').replace(/Deno.env.get\(([^)]*)\)!/g,'Deno.env.get($1)');
+let handler,row={id:'test',status:'active'},updates=0;
+const client={from(){return {select(){return this},eq(){return this},async maybeSingle(){return {data:row,error:null}},update(){updates++;return {eq(){return this},async select(){row.status='unsubscribed';return {data:[{id:'test'}],error:null}}}}}}};
+vm.runInNewContext(source,{Response,URL,TextEncoder,Uint8Array,crypto:webcrypto,createClient:()=>client,Deno:{env:{get:()=>''},serve:f=>handler=f}});
+(async()=>{const token='a'.repeat(43),base='https://x.test/?token='+token;
+let r=await handler(new Request(base));assert.equal(r.status,303);assert.equal(updates,0);assert.match(r.headers.get('Location'),/#token=/);
+r=await handler(new Request('https://x.test/?token=bad'));assert.match(r.headers.get('Location'),/status=invalid/);
+const post=(origin,body)=>new Request('https://x.test/',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+r=await handler(post('https://evil.test',{token,confirm:true}));assert.equal(r.status,403);assert.equal(updates,0);
+r=await handler(post('https://alnuqtamedia.com',{token,confirm:false}));assert.equal(r.status,400);assert.equal(updates,0);
+r=await handler(post('https://alnuqtamedia.com',{token,confirm:true}));assert.equal(r.status,200);assert.equal(row.status,'unsubscribed');assert.equal(updates,1);
+r=await handler(post('https://alnuqtamedia.com',{token,confirm:true}));assert.equal(r.status,200);assert.equal(updates,1);
+row=null;r=await handler(post('https://alnuqtamedia.com',{token,confirm:true}));assert.equal(r.status,400);
+console.log('PASS: link scanners do not cancel; explicit confirmation; origin validation; cancellation; repeated cancellation; invalid links.');})();

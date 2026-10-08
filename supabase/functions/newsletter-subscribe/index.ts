@@ -50,7 +50,7 @@ Deno.serve(async (req: Request) => {
     const { data: existing } = await client.from("newsletter_subscribers").select("id,status").eq("email_normalized", email).maybeSingle();
     if (existing?.status === "active") return json(origin, 200, { ok: true, already_active: true });
 
-    const payload = { email, source, status: "pending", consent_at: new Date().toISOString(), confirmation_token_hash: tokenHash, confirmation_expires_at: expires, unsubscribed_at: null, updated_at: new Date().toISOString() };
+    const payload = { email, source, status: "pending", consent_at: new Date().toISOString(), confirmation_token_hash: tokenHash, confirmation_expires_at: expires, unsubscribed_at: null, unsubscribe_token_hash: null, updated_at: new Date().toISOString() };
     const result = existing
       ? await client.from("newsletter_subscribers").update(payload).eq("id", existing.id)
       : await client.from("newsletter_subscribers").insert(payload);
