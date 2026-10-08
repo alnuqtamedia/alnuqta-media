@@ -68,7 +68,7 @@ document.querySelectorAll('.category-tab').forEach(btn=>btn.addEventListener('cl
 document.getElementById('search').oninput=render;document.getElementById('section').onchange=()=>setActiveCategory(activeCategory);document.getElementById('back').onclick=()=>showListing();window.onpopstate=()=>{const params=new URLSearchParams(location.search),slug=params.get('slug')||location.pathname.match(/\/articles\/([-a-zA-Z0-9]+)\.html$/)?.[1];if(slug)openPost(slug,false);else{const requested=params.get('section')||params.get('category')||'all';activeCategory=requested==='all'?'all':window.normalizeCategory(requested);document.getElementById('section').value=Object.hasOwn(labels,params.get('type'))?params.get('type'):'all';setActiveCategory(activeCategory,{updateUrl:false});showListing(false);}};load();
 </script>
 <script src="public/supabase-public-config.js"></script>
-<script src="public/newsletter.js"></script>
+<script src="public/newsletter.js?v=20261008-2"></script>
 <script src="public/newsroom-supabase.js?v=20261008-share1"></script>
 <!-- deploy trigger: newsroom Supabase runtime config -->
 </body></html>

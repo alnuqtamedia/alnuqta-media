@@ -28,12 +28,14 @@
         });
         const result = await response.json().catch(() => ({}));
         if (!response.ok) throw new Error(messages[result.error] || messages.subscription_failed);
-        form.reset();
+        if(result.already_active || result.confirmation_sent)form.reset();
         status.textContent = result.already_active
           ? "هذا البريد مشترك ومؤكد بالفعل."
           : result.confirmation_sent
             ? "أرسلنا رابط التأكيد إلى بريدك."
-            : "تم تسجيل طلبك. سنرسل رابط التأكيد بعد تفعيل خدمة البريد الرسمية.";
+            : result.pending_provider
+              ? "تم تسجيل طلبك، لكن خدمة بريد التأكيد غير مفعّلة حالياً. الاشتراك لم يُؤكّد بعد."
+              : "تم تسجيل طلبك، لكن تعذر إرسال رابط التأكيد. أعد المحاولة لاحقاً؛ الاشتراك لم يُؤكّد بعد.";
       } catch (error) {
         status.textContent = error.message || messages.subscription_failed;
       } finally {
