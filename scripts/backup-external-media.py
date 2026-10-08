@@ -12,7 +12,8 @@ import urllib.request
 from pathlib import Path
 
 HOSTS = {'upload.wikimedia.org', 'thumb.wikimedia.org', 'images.pexels.com',
-         'd1ldvf68ux039x.cloudfront.net', 'assets.the-afc.com'}
+         'd1ldvf68ux039x.cloudfront.net', 'assets.the-afc.com',
+         't1100310000009723.p.clickup-attachments.com'}
 LIMIT = 20 * 1024 * 1024
 USER_AGENT = 'AlnuqtaMediaArchiveBot/1.1 (+https://alnuqtamedia.com)'
 

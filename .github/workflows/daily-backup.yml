@@ -1,5 +1,8 @@
 name: Daily encrypted backup
 on:
+  push:
+    branches: [main]
+    paths: ['scripts/backup-external-media.py', 'scripts/backup-restore-package.py']
   workflow_dispatch:
   schedule:
     - cron: '23 23 * * *' # 02:23 Baghdad; schedules may be delayed.

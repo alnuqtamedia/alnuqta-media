@@ -35,7 +35,10 @@ docker run --rm -e PGDATABASE -e PGSSLMODE "$image" sh -c 'exec psql --dbname="$
 python3 scripts/backup-external-media.py "$work/payload"
 python3 scripts/backup-package.py "$work/payload" "$work/backup.zip"
 python3 scripts/backup-verify.py "$work/backup.zip"
-age -r "$BACKUP_AGE_RECIPIENT" -o "$work/backup.zip.age" "$work/backup.zip"
+# A second recipient exists only for this job; its private identity is deleted by the EXIT trap.
+age-keygen -o "$work/rehearsal.key" 2>/dev/null
+rehearsal_recipient=$(age-keygen -y "$work/rehearsal.key")
+age -r "$BACKUP_AGE_RECIPIENT" -r "$rehearsal_recipient" -o "$work/backup.zip.age" "$work/backup.zip"
 digest=$(sha256sum "$work/backup.zip.age" | cut -d ' ' -f1)
 key="alnuqta-backups/$(date -u +%Y/%m/%d)/$(date -u +%Y%m%dT%H%M%SZ)-${GITHUB_RUN_ID:-local}-${GITHUB_RUN_ATTEMPT:-1}.zip.age"
 until_date=$(date -u -d '+30 days' +%Y-%m-%dT%H:%M:%SZ)
@@ -54,7 +57,9 @@ aws --endpoint-url "$B2_ENDPOINT" s3api get-object --bucket "$B2_BUCKET" --key "
 [[ "$(sha256sum "$work/roundtrip.age" | cut -d ' ' -f1)" == "$digest" ]]
 echo "Encrypted ZIP upload, 30-day Compliance lock and download checksum verified."
 python3 scripts/backup-preserve.py "$work/payload"
-echo "This is not a full restore test."
+age -d -i "$work/rehearsal.key" -o "$work/roundtrip.zip" "$work/roundtrip.age"
+python3 scripts/backup-restore-package.py "$work/roundtrip.zip"
+echo "Downloaded encrypted archive: decryption, image bytes and isolated editorial restore verified. Not a full managed-Supabase recovery."
 python3 - "$work/payload/external-media.json" <<'COVERAGE'
 import json, sys
 if not json.load(open(sys.argv[1]))['complete_for_scope']:

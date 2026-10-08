@@ -96,7 +96,7 @@ class BackupTests(unittest.TestCase):
         self.assertFalse(report['complete_for_scope'])
         self.assertFalse(report['records'][0]['captured'])
     def test_external_origins_and_redirects_are_restricted(self):
-        for url in ['http://images.pexels.com/a','https://127.0.0.1/a','https://images.pexels.com@localhost/a']:
+        for url in ['http://images.pexels.com/a','https://127.0.0.1/a','https://images.pexels.com@localhost/a', 'https://evil.p.clickup-attachments.com/a', 'https://t1100310000009723.p.clickup-attachments.com.evil.test/a']:
             with self.assertRaises(ValueError): external.download(url)
         self.assertIsNone(external.NoRedirect().redirect_request(None,None,302,'',{},'https://localhost'))
     def test_provider_retry_after_seconds_and_date(self):
