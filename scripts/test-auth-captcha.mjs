@@ -1,0 +1,30 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const code = fs.readFileSync('public/auth-captcha.js', 'utf8');
+function setup(key) {
+  const box = {hidden:true}, status = {}, appended = [];
+  let callbacks, resets=0;
+  const window = {ALNUQTA_AUTH_SECURITY:{turnstileSiteKey:key},turnstile:{render(_box, options){callbacks=options;return 'widget';},reset(){resets++;}}};
+  vm.runInNewContext(code, {window,document:{getElementById:id=>id==='status'?status:box,createElement:()=>({}),head:{appendChild:s=>appended.push(s)}}});
+  return {window,box,status,appended,get callbacks(){return callbacks;},get resets(){return resets;}};
+}
+const off=setup('');
+assert.equal(off.appended.length,0);
+assert.equal(off.box.hidden,true);
+await off.window.ALNUQTA_AUTH_CAPTCHA.run(options=>assert.deepEqual(Object.keys(options),[]));
+const on=setup('public-test-key');
+assert.equal(on.box.hidden,false);
+await assert.rejects(on.window.ALNUQTA_AUTH_CAPTCHA.run(()=>assert.fail('must not call Auth')),/أكمل/);
+on.window.alnuqtaTurnstileReady();
+on.callbacks.callback('verified-test-token');
+await on.window.ALNUQTA_AUTH_CAPTCHA.run(options=>assert.equal(options.captchaToken,'verified-test-token'));
+assert.equal(on.resets,1);
+await assert.rejects(on.window.ALNUQTA_AUTH_CAPTCHA.run(()=>assert.fail()),/أكمل/);
+on.callbacks.callback('new-token');on.callbacks['expired-callback']();
+await assert.rejects(on.window.ALNUQTA_AUTH_CAPTCHA.run(()=>assert.fail()),/أكمل/);
+on.callbacks.callback('retry-token');
+await assert.rejects(on.window.ALNUQTA_AUTH_CAPTCHA.run(()=>{throw new Error('network failed');}),/network failed/);
+assert.equal(on.resets,2);
+for(const script of fs.readFileSync('admin/index.html','utf8').matchAll(/<script(?![^>]*src)[^>]*>([\s\S]*?)<\/script>/g)) Function(script[1]);
+console.log('PASS: CAPTCHA disabled mode, token requirement, expiry, one-use reset and Auth failure.');

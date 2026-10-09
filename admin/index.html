@@ -21,12 +21,15 @@
     <button type="submit">دخول إلى غرفة الأخبار</button>
     <button type="button" id="resetPassword" style="margin-top:10px;background:transparent;border:1px solid var(--line)">نسيت كلمة المرور</button>
   </form>
+  <div id="authCaptcha" hidden></div>
   <div id="status" class="status" aria-live="polite"></div>
   <p class="note">الدخول مخصص لفريق النقطة، وتُطبّق الصلاحيات حسب حساب المستخدم.</p>
   <div class="links"><a href="../newsroom.html">العودة إلى الموقع</a><a href="./dashboard.html">لوحة الإدارة</a></div>
 </main>
 <script src="../public/supabase-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="../public/auth-security-config.js"></script>
+<script src="../public/auth-captcha.js"></script>
 <script>
 const config = window.ALNUQTA_SUPABASE_PUBLIC || {};
 const SUPABASE_URL = config.url || '';
@@ -38,10 +41,13 @@ form.addEventListener('submit', async (event) => {
   event.preventDefault();
   status.textContent = 'جاري تسجيل الدخول…';
   if (!SUPABASE_URL || !SUPABASE_ANON_KEY) { status.textContent = 'إعداد الاتصال غير متاح حاليًا. أعد تحميل الصفحة.'; return; }
-  const { data, error } = await client.auth.signInWithPassword({
+  let result;
+  try { result = await window.ALNUQTA_AUTH_CAPTCHA.run(options => client.auth.signInWithPassword({
     email: document.getElementById('email').value.trim(),
-    password: document.getElementById('password').value
-  });
+    password: document.getElementById('password').value, options
+  }));
+  } catch (error) { status.textContent = error.message || 'تعذر تسجيل الدخول.'; return; }
+  const {data,error}=result;
   if (error) { status.textContent = error.message || 'تعذر تسجيل الدخول.'; return; }
   if (!data.session) { status.textContent = 'لم يتم إنشاء جلسة تسجيل دخول.'; return; }
   const { data: aal, error: aalError } = await client.auth.mfa.getAuthenticatorAssuranceLevel();
@@ -56,7 +62,10 @@ document.getElementById('resetPassword').addEventListener('click', async () => {
   if (!client) { status.textContent = 'إعداد الاتصال غير متاح حاليًا.'; return; }
   status.textContent = 'جاري إرسال رابط الاستعادة…';
   const redirectTo = new URL('./reset-password.html', window.location.href).href;
-  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo });
+  let result;
+  try { result = await window.ALNUQTA_AUTH_CAPTCHA.run(options => client.auth.resetPasswordForEmail(email, { redirectTo, ...options })); }
+  catch (error) { status.textContent = error.message || 'تعذر إرسال رابط الاستعادة.'; return; }
+  const {error}=result;
   status.textContent = error ? (error.message || 'تعذر إرسال رابط الاستعادة.') : 'إذا كان البريد مسجلاً، ستصلك رسالة الاستعادة. افحص البريد غير المرغوب أيضاً.';
 });
 </script>

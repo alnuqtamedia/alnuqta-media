@@ -1,3 +1,4 @@
+import { scanAttachment } from "./attachment-scan.mjs";
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
@@ -120,6 +121,16 @@ Deno.serve(async (req: Request) => {
       }
       if (!(await hasExpectedSignature(attachment))) {
         return response(origin, 400, { error: "invalid_attachment_signature" });
+      }
+      try {
+        await scanAttachment(attachment, {
+          url: Deno.env.get("SOURCE_SCAN_URL") || "",
+          token: Deno.env.get("SOURCE_SCAN_TOKEN") || "",
+          required: Deno.env.get("SOURCE_SCAN_REQUIRED") === "true",
+        });
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : "attachment_scan_unavailable";
+        return response(origin, reason === "attachment_rejected" ? 400 : 503, { error: reason });
       }
       const extension = ({
         "application/pdf": "pdf",

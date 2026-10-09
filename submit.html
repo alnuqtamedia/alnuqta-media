@@ -29,7 +29,7 @@
 <script src="public/supabase-public-config.js"></script>
 <script>
 const form=document.getElementById('sourceForm'),statusEl=document.getElementById('formStatus'),button=document.getElementById('submitButton');
-const messages={invalid_submission:'تحقق من طول العنوان والتفاصيل ومن الموافقة المطلوبة.',invalid_attachment:'نوع الملف غير مسموح أو حجمه أكبر من 10 MB.',request_too_large:'حجم الطلب أكبر من الحد المسموح.',rate_limited:'تم تجاوز عدد المحاولات المؤقت. حاول بعد ساعة.',submission_failed:'تعذر حفظ الإرسال الآن. حاول لاحقاً.'};
+const messages={attachment_rejected:'رُفض المرفق بعد الفحص الأمني. لا تعِد إرسال الملف نفسه.',attachment_scan_unavailable:'تعذر فحص المرفق أمنياً الآن. لم يُحفظ الإرسال؛ حاول لاحقاً أو أرسل النص دون مرفق.',invalid_attachment_signature:'محتوى الملف لا يطابق نوعه المعلن.',invalid_submission:'تحقق من طول العنوان والتفاصيل ومن الموافقة المطلوبة.',invalid_attachment:'نوع الملف غير مسموح أو حجمه أكبر من 10 MB.',request_too_large:'حجم الطلب أكبر من الحد المسموح.',rate_limited:'تم تجاوز عدد المحاولات المؤقت. حاول بعد ساعة.',submission_failed:'تعذر حفظ الإرسال الآن. حاول لاحقاً.'};
 form.addEventListener('submit',async event=>{
   event.preventDefault();
   const config=window.ALNUQTA_SUPABASE_PUBLIC||{},file=document.getElementById('attachment').files[0];
