@@ -13,14 +13,14 @@ export function renderArticle(template,p){
  html=html.replace('<head>','<head><base href="'+origin+'/">'+attrs.map(([key,name,value])=>`<meta ${key}="${name}" content="${escape(value)}">`).join('')+'<link rel="canonical" href="'+url+'"><script>window.ALNUQTA_ARTICLE_ID='+JSON.stringify(p.id)+'</script>');
  const context={};vm.createContext(context);vm.runInContext(template.slice(template.indexOf('const esc='),template.indexOf('function displayImageUrl(')),context);
  const body=context.bodyToHtml(p.body);
- const snapshot=`<div class="reader-hero rounded-2xl p-6 md:p-10 mb-8"><h1 class="text-4xl font-extrabold leading-tight">${escape(title)}</h1></div>${image?`<figure class="mb-8"><img src="${escape(image)}" alt="${escape(p.image_alt||title)}" class="w-full rounded-2xl">${String(p.cover_image_caption||'').trim()?`<figcaption>${escape(p.cover_image_caption)}</figcaption>`:''}</figure>`:''}<div class="article-body text-lg" lang="ar" dir="rtl">${body}</div>`;
+ const snapshot=`<div class="reader-hero rounded-2xl p-6 md:p-10 mb-8"><h1 class="text-4xl font-extrabold leading-tight">${escape(title)}</h1></div>${image?`<figure class="mb-8"><img src="${escape(image)}" alt="${escape(p.image_alt||title)}" class="w-full rounded-2xl">${[p.cover_image_caption,p.cover_image_credit].filter(x=>String(x||'').trim()).length?`<figcaption>${[p.cover_image_caption,p.cover_image_credit].filter(x=>String(x||'').trim()).map(x=>`<div>${escape(x)}</div>`).join('')}</figcaption>`:''}</figure>`:''}<div class="article-body text-lg" lang="ar" dir="rtl">${body}</div>`;
  html=html.replace('<section id="listing">','<section id="listing" class="hidden">').replace('id="reader" class="hidden ','id="reader" class="').replace('<div id="article"></div>','<div id="article">'+snapshot+'</div>');
  return html;
 }
 export async function build(){
  const template=fs.readFileSync('newsroom.html','utf8');
  const key=process.env.SUPABASE_ANON_KEY;if(!key)throw Error('Public API key missing');
- const endpoint='https://zsqvmuqlmtnhndwuqlfy.supabase.co/rest/v1/articles?select=id,title,subtitle,excerpt,body,status,cover_image_url,image,gallery,cover_image_caption&status=eq.published&order=id.asc';
+ const endpoint='https://zsqvmuqlmtnhndwuqlfy.supabase.co/rest/v1/articles?select=id,title,subtitle,excerpt,body,status,cover_image_url,image,gallery,cover_image_caption,cover_image_credit&status=eq.published&order=id.asc';
  const rows=[];for(let offset=0;;offset+=500){const response=await fetch(endpoint+'&limit=500&offset='+offset,{headers:{apikey:key,Authorization:'Bearer '+key},signal:AbortSignal.timeout(30000)});if(!response.ok)throw Error('Published article fetch failed: '+response.status);const batch=await response.json();if(!Array.isArray(batch))throw Error('Invalid feed');rows.push(...batch);if(batch.length<500)break;}
  fs.rmSync('articles',{recursive:true,force:true});fs.mkdirSync('articles');
  for(const p of rows)fs.writeFileSync('articles/'+p.id+'.html',renderArticle(template,p));
