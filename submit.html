@@ -19,7 +19,7 @@
 <div class="hp" aria-hidden="true"><label for="website">الموقع</label><input id="website" name="website" tabindex="-1" autocomplete="off"></div>
 <div><label for="subject" class="block font-cairo font-bold text-sm mb-2">موضوع المعلومة</label><input id="subject" name="subject" required minlength="5" maxlength="160" class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white" placeholder="عنوان مختصر للقضية"></div>
 <div><label for="details" class="block font-cairo font-bold text-sm mb-2">التفاصيل</label><textarea id="details" name="details" required minlength="50" maxlength="10000" rows="8" class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white" placeholder="اكتب المعلومات والتواريخ والسياق بوضوح..."></textarea><p class="text-xs text-slate-400 mt-2">من 50 إلى 10,000 حرف. لا تذكر بيانات شخصية غير ضرورية.</p></div>
-<div><label for="attachment" class="block font-cairo font-bold text-sm mb-2">وثيقة اختيارية</label><input id="attachment" name="attachment" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" class="w-full bg-[#06101E] border border-slate-600 rounded-lg p-3 text-white"><p class="text-xs text-slate-400 mt-2">PDF أو JPG أو PNG أو WebP، بحد أقصى 10 MB.</p></div>
+<p class="text-sm text-slate-300" role="note">يستقبل صندوق المصادر النصوص فقط حالياً. رفع المرفقات متوقف مؤقتاً لحين تفعيل الفحص الأمني.</p>
 <label class="flex items-start gap-3 text-sm text-slate-200 leading-6"><input id="consent" name="consent" value="yes" type="checkbox" required class="mt-1 h-4 w-4"><span>أفهم أن هذه ليست قناة إخفاء هوية، وأوافق على معالجة المعلومات والملف لغرض المراجعة الصحفية.</span></label>
 <div id="formStatus" class="min-h-6 text-sm" role="status" aria-live="polite"></div>
 <button id="submitButton" class="w-full bg-red-600 hover:bg-red-700 disabled:opacity-60 py-3 rounded-lg font-cairo font-bold">إرسال إلى فريق التحرير</button>
@@ -29,12 +29,11 @@
 <script src="public/supabase-public-config.js"></script>
 <script>
 const form=document.getElementById('sourceForm'),statusEl=document.getElementById('formStatus'),button=document.getElementById('submitButton');
-const messages={attachment_rejected:'رُفض المرفق بعد الفحص الأمني. لا تعِد إرسال الملف نفسه.',attachment_scan_unavailable:'تعذر فحص المرفق أمنياً الآن. لم يُحفظ الإرسال؛ حاول لاحقاً أو أرسل النص دون مرفق.',invalid_attachment_signature:'محتوى الملف لا يطابق نوعه المعلن.',invalid_submission:'تحقق من طول العنوان والتفاصيل ومن الموافقة المطلوبة.',invalid_attachment:'نوع الملف غير مسموح أو حجمه أكبر من 10 MB.',request_too_large:'حجم الطلب أكبر من الحد المسموح.',rate_limited:'تم تجاوز عدد المحاولات المؤقت. حاول بعد ساعة.',submission_failed:'تعذر حفظ الإرسال الآن. حاول لاحقاً.'};
+const messages={attachments_paused:'رفع المرفقات متوقف مؤقتاً. أرسل النص فقط.',attachment_rejected:'رُفض المرفق بعد الفحص الأمني. لا تعِد إرسال الملف نفسه.',attachment_scan_unavailable:'تعذر فحص المرفق أمنياً الآن. لم يُحفظ الإرسال؛ حاول لاحقاً أو أرسل النص دون مرفق.',invalid_attachment_signature:'محتوى الملف لا يطابق نوعه المعلن.',invalid_submission:'تحقق من طول العنوان والتفاصيل ومن الموافقة المطلوبة.',invalid_attachment:'نوع الملف غير مسموح أو حجمه أكبر من 10 MB.',request_too_large:'حجم الطلب أكبر من الحد المسموح.',rate_limited:'تم تجاوز عدد المحاولات المؤقت. حاول بعد ساعة.',submission_failed:'تعذر حفظ الإرسال الآن. حاول لاحقاً.'};
 form.addEventListener('submit',async event=>{
   event.preventDefault();
-  const config=window.ALNUQTA_SUPABASE_PUBLIC||{},file=document.getElementById('attachment').files[0];
+  const config=window.ALNUQTA_SUPABASE_PUBLIC||{};
   if(!config.url){statusEl.textContent='خدمة الإرسال غير مفعّلة حالياً.';statusEl.className='min-h-6 text-sm text-red-300';return}
-  if(file&&file.size>10*1024*1024){statusEl.textContent=messages.invalid_attachment;statusEl.className='min-h-6 text-sm text-red-300';return}
   button.disabled=true;statusEl.textContent='جاري حفظ الإرسال…';statusEl.className='min-h-6 text-sm text-slate-300';
   try{
     const response=await fetch(config.url+'/functions/v1/source-submit',{method:'POST',body:new FormData(form),headers:config.anonKey?{apikey:config.anonKey}:{}});

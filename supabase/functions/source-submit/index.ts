@@ -95,6 +95,11 @@ Deno.serve(async (req: Request) => {
     const consent = String(form.get("consent") || "");
     const attachment = form.get("attachment");
 
+    // Temporary text-only intake: reject every uploaded file before database or storage access.
+    if (Array.from(form.values()).some(value => value instanceof File && (value.size > 0 || value.name))) {
+      return response(origin, 400, { error: "attachments_paused" });
+    }
+
     if (honeypot) return response(origin, 200, { ok: true });
     if (subject.length < 5 || subject.length > 160 || details.length < 50 || details.length > 10000 || consent !== "yes") {
       return response(origin, 400, { error: "invalid_submission" });
