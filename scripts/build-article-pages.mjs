@@ -3,8 +3,9 @@ import vm from 'node:vm';
 import {pathToFileURL} from 'node:url';
 const origin='https://alnuqtamedia.com';
 const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-function imageUrl(p){const value=p.cover_image_url||p.image||p.gallery?.[0]?.url||'';try{const u=new URL(value);return u.protocol==='https:'?u.href:'';}catch{return '';}}
+function imageUrl(p){const value=p.cover_image_url||p.image||p.gallery?.[0]?.url||'';try{const u=new URL(value);if(u.hostname==='upload.wikimedia.org'&&u.pathname==='/wikipedia/commons/0/02/Iraqi_Museum.jpg')return origin+'/assets/editorial/iraqi-museum-1280.jpg';return u.protocol==='https:'?u.href:'';}catch{return '';}}
 export function renderArticle(template,p){
+ if((p.cover_image_url||p.image)==='https://upload.wikimedia.org/wikipedia/commons/0/02/Iraqi_Museum.jpg')p={...p,cover_image_caption:'صورة أرشيفية للقاعة الآشورية في المتحف العراقي ببغداد، 6 شباط 2018؛ لا تعرض القطع المستردّة الواردة في الخبر.',cover_image_credit:'MohammadHuzam / Wikimedia Commons — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:Iraqi_Museum.jpg — https://creativecommons.org/licenses/by-sa/4.0/ — نسخة مصغرة من Wikimedia، مستضافة محلياً'};
  if(p.status!=='published'||!/^[-a-zA-Z0-9]+$/.test(p.id))throw Error('Only published safe article IDs may be rendered');
  const url=origin+'/articles/'+p.id+'.html',title=p.title||'مادة صحفية',desc=String(p.excerpt||p.subtitle||p.body||'').replace(/\s+/g,' ').slice(0,240),image=imageUrl(p);
  const attrs=[['name','description',desc],['property','og:type','article'],['property','og:title',title],['property','og:description',desc],['property','og:url',url],['property','og:locale','ar_IQ'],['property','og:site_name','النقطة Media'],['name','twitter:card',image?'summary_large_image':'summary'],['name','twitter:title',title],['name','twitter:description',desc]];

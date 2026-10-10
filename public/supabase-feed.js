@@ -9,7 +9,7 @@
   const categoryKey = post => window.normalizeCategory(post.category);
   const categoryLabel = post => categories.find(([id])=>id===categoryKey(post))?.[1] || types[post.section] || 'مادة صحفية';
   const cover = post => post.cover_image_url || post.image || post.gallery?.[0]?.url || '';
-  function displayImageUrl(value,width){try{const u=new URL(value,location.href);if(u.hostname==='images.pexels.com'){u.search='';u.searchParams.set('auto','compress');u.searchParams.set('cs','tinysrgb');u.searchParams.set('w',String(width));u.searchParams.set('q','75');return u.href;}return value;}catch{return value;}}
+  function displayImageUrl(value,width){try{const u=new URL(value,location.href);if(u.hostname==='upload.wikimedia.org'&&u.pathname==='/wikipedia/commons/0/02/Iraqi_Museum.jpg')return new URL('/assets/editorial/iraqi-museum-1280.jpg',location.origin).href;if(u.hostname==='images.pexels.com'){u.search='';u.searchParams.set('auto','compress');u.searchParams.set('cs','tinysrgb');u.searchParams.set('w',String(width));u.searchParams.set('q','75');return u.href;}return value;}catch{return value;}}
   const articleUrl = post => window.articlePublicUrl?window.articlePublicUrl(post):`newsroom.html?slug=${encodeURIComponent(post.slug||post.id||'')}`;
   const latestSection = () => document.getElementById('homepage-feed');
 
