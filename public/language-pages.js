@@ -22,7 +22,7 @@ window.ALNUQTA_PAGE_TRANSLATIONS = {
 'طلبات التصحيح يجب أن تحدد الادعاء والدليل بوضوح.':'Correction requests should clearly identify the claim and supporting evidence.',
 'سياسة الخصوصية | النقطة Media':'Privacy policy | Alnuqta Media','الشفافية والبيانات':'Transparency and data','سياسة الخصوصية':'Privacy policy',
 'توضح هذه الصفحة ما نجمعه عند استخدام خدمات النقطة، ولماذا، ومن يستطيع الوصول إليه.':'This page explains what we collect when you use Alnuqta services, why we collect it and who can access it.',
-'آخر تحديث: 21 سبتمبر 2026':'Last updated: 21 September 2026','التصفح العام':'Public browsing',
+'آخر تحديث: 10 تشرين الأول 2026':'Last updated: 10 October 2026','آخر تحديث: 21 سبتمبر 2026':'Last updated: 21 September 2026','التصفح العام':'Public browsing',
 'لا نطلب إنشاء حساب لقراءة الموقع. قد يحتفظ مزود الاستضافة وسجل الشبكة ببيانات تشغيلية اعتيادية مثل عنوان IP ونوع المتصفح ووقت الطلب وفق سياساتهما التقنية.':'You do not need an account to read the website. Hosting providers and network logs may retain ordinary operational data, such as IP addresses, browser types and request times, under their technical policies.',
 'النشرة البريدية':'Newsletter',
 'عند الاشتراك نجمع عنوان البريد، مصدر نموذج الاشتراك ووقت الموافقة. يبقى الاشتراك معلّقاً إلى أن تؤكد الرابط المرسل إلى بريدك. نستخدم هذه البيانات لإدارة الاشتراك والإرسال وإلغاء الاشتراك فقط.':'When you subscribe, we collect your email address, the signup form source and your consent time. Your subscription remains pending until you confirm the emailed link. We use this data only to manage subscriptions, delivery and unsubscribing.',
