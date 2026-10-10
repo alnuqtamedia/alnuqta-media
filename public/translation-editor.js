@@ -11,7 +11,7 @@
     fields.forEach(field=>$(field).value=data?.[field]||'');$('state').value=data?.status||'draft';$('reviewed').checked=false;
     const educationFix=new URLSearchParams(location.search).get('education-fix')==='1'&&selected.id==='38aa6367-6dfa-43ad-b4f0-2160cd98fd28';
     if(educationFix&&data&&Date.parse(data.source_updated_at)===Date.parse(selected.updated_at)){
-      fields.forEach(field=>$(field).value=$(field).value.replace(/Al-Nugta/g,'Alnuqta').replace(/Remodial/g,'Remedial'));
+      fields.forEach(field=>$(field).value=$(field).value.replace(/Al-Nugta/g,'Alnuqta').replace(/Remodial/g,'Remedial').replace(/an installment paid by the student/g,'a tuition fee paid by the student'));
       if(selected.cover_image_url==='https://upload.wikimedia.org/wikipedia/commons/3/37/DIS_classroom.jpg'){
         $('cover_image_caption').value='Archival photograph of a classroom at Duhok International School, 21 November 2017. Used for illustration; it does not document the cases discussed in this report.';
         $('cover_image_credit').value='Firm Foundations Duhok / Wikimedia Commons — CC BY-SA 4.0 — https://commons.wikimedia.org/wiki/File:DIS_classroom.jpg — https://creativecommons.org/licenses/by-sa/4.0/ — Original file unchanged';
