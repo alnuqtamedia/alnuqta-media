@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-12",
+  "application": "Owner session with AAL2; optimistic updated_at check; preserve article revisions; do not bypass publication controls",
+  "items": [
+    {
+      "article_id": "48e5cddd-ed95-424b-8470-4710e03e8ad8",
+      "expected_updated_at": "2026-10-01T09:12:31.271638+00:00",
+      "sources": [
+        "https://apnews.com/article/a097a39f3d1a3515adc2ba3298a6816f",
+        "https://www.theguardian.com/us-news/2026/sep/30/pentagon-formal-withdrawal-troops-iraq",
+        "https://www.lemonde.fr/en/international/article/2026/10/02/iraq-celebrates-departure-of-international-coalition-and-last-us-troops_6758186_4.html"
+      ],
+      "review_note_ar": "المراجع تؤيد الانسحاب وانتهاء المهمة. تفاصيل وزارة الدفاع العراقية وصياغة خلو البلاد تماماً تحتاج بياناً عراقياً أصلياً؛ لا توسّع دلالة انتهاء مهمة التحالف إلى انتهاء كل تعاون أمني."
+    },
+    {
+      "article_id": "6aaa532f-e901-42e9-adcf-471553807dda",
+      "expected_updated_at": "2026-10-01T09:51:59.968976+00:00",
+      "sources": [
+        "https://us.gov.krd/kurdistan-region-marks-historic-unification-of-peshmerga-forces/"
+      ],
+      "review_note_ar": "المرجع الرسمي يذكر إعلان الوزارة يوم 10 أيلول والاحتفال يوم 21 أيلول ونشر المرجع يوم 29 أيلول؛ هذه تواريخ مختلفة. يدعم دمج 70 و80 والتنسيق مع الجيش العراقي. تجنب إضافة اقتباس حرفي أو مدة 30 عاماً دون مصدر محدد."
+    },
+    {
+      "article_id": "4e16f93e-0417-4a4a-8028-a6ee6a417547",
+      "expected_updated_at": "2026-09-28T16:15:59.869007+00:00",
+      "recommendation": "return_to_review",
+      "review_note_ar": "لم يُثبت توثيق مقابلة أم أحمد أو حالة ابنها، ولا تكفي الروابط الخلفية لإثبات القصة. ادعاءات 6000% و12% و4 ملايين و1.6 مليون وعلاقة تلوث المياه بالتشخيص الفردي تتطلب مصادر أصلية ومنهجية واضحة. تُحفظ المادة وتُعاد للمراجعة بدلاً من اختراع مصادر تؤكدها. لا تنشر أسماء أو معلومات صحية إضافية دون توثيق وموافقة أصحابها."
+    },
+    {
+      "article_id": "64bf569c-a1cf-4542-b4df-37e62ae9f1bc",
+      "language": "en",
+      "field": "cover_image_credit",
+      "value": "Free licensed image — Pexels",
+      "expected_source_updated_at": "2026-09-30T22:55:11.823611+00:00",
+      "review_note_ar": "ترجمة الاعتماد الموجود بالعربية فقط؛ لا تضيف اسم مصور أو ترخيصاً أو ضمان حقوق غير موجود في الأصل."
+    }
+  ]
+}
