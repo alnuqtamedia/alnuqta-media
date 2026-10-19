@@ -1,0 +1,18 @@
+import fs from 'node:fs';
+import vm from 'node:vm';
+import assert from 'node:assert/strict';
+const context=vm.createContext({});
+vm.runInContext(fs.readFileSync('public/editorial-sources.js','utf8'),context);
+const sources=context.ALNUQTA_SOURCES;
+const original=[{title:'مصدر أصلي',url:'https://example.com/report?a=1&b=2',publisher:'الجهة الأصلية'},'مرجع مطبوع، صفحة 12'];
+assert.equal(sources.toText(original),'مصدر أصلي — https://example.com/report?a=1&b=2\nمرجع مطبوع، صفحة 12');
+assert.deepEqual(Array.from(sources.fromText(sources.toText(original),original)),original);
+assert.equal(sources.fromText(sources.toText(original),original)[0],original[0]);
+const changed=sources.fromText('مرجع جديد\n'+sources.toText(original),original);
+assert.equal(changed[1],original[0]);
+assert.throws(()=>sources.fromText('[object Object]'));
+assert.throws(()=>sources.validate([{title:'مرجع',url:'javascript:alert(1)'}]));
+assert.throws(()=>sources.validate([{}]));
+assert.equal(sources.hasBroken(['[object Object]']),true);
+assert.equal(sources.fromText('',original).length,0);
+console.log('PASS: structured sources survive editing with metadata and URLs intact; corrupt placeholders and unsafe source URLs are rejected.');
