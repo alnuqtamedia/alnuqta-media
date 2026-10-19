@@ -15,4 +15,16 @@ assert.throws(()=>sources.validate([{title:'مرجع',url:'javascript:alert(1)'}
 assert.throws(()=>sources.validate([{}]));
 assert.equal(sources.hasBroken(['[object Object]']),true);
 assert.equal(sources.fromText('',original).length,0);
+const duplicate=[{title:'مرجع',url:'https://example.com',note:'first'},{title:'مرجع',url:'https://example.com',note:'second'}];
+assert.deepEqual(Array.from(sources.fromText(sources.toText(duplicate),duplicate)),duplicate);
+assert.throws(()=>sources.fromText(sources.toText([{unknown:'must not disappear'}]),[{unknown:'must not disappear'}]));
+const html=fs.readFileSync('newsroom.html','utf8');
+const list=html.slice(html.indexOf('function listBlock('),html.indexOf('function card('));
+const reader=vm.createContext({});
+vm.runInContext("const esc=v=>String(v??'').replace(/[&<>\"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',\"'\":'&#39;'}[c]));"+list,reader);
+const rendered=reader.listBlock('Sources',original);
+assert.match(rendered,/href="https:\/\/example.com\/report\?a=1&amp;b=2"/);
+assert.match(rendered,/مصدر أصلي/);
+assert.doesNotMatch(reader.listBlock('Sources',[{title:'unsafe',url:'javascript:alert(1)'}]),/href=/);
+assert.ok(html.includes("typeof source==='string'?educationLabel(p,source):source"),'translation labels must not stringify structured sources');
 console.log('PASS: structured sources survive editing with metadata and URLs intact; corrupt placeholders and unsafe source URLs are rejected.');

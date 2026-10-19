@@ -21,8 +21,9 @@
   function fromText(text,original=[]){
     const lines=String(text||'').split(/\r?\n/).map(x=>x.trim()).filter(Boolean);
     // Keep structured references (and their metadata) when their readable line survives editing.
-    const known=new Map((Array.isArray(original)?original:[]).map(x=>[sourceText(x),x]));
-    return validate(lines.map(line=>known.has(line)?known.get(line):line));
+    const known=new Map();
+    for(const source of Array.isArray(original)?original:[]){const line=sourceText(source);if(!known.has(line))known.set(line,[]);known.get(line).push(source);}
+    return validate(lines.map(line=>known.get(line)?.length?known.get(line).shift():line));
   }
   root.ALNUQTA_SOURCES={sourceText,toText,fromText,validate,hasBroken:sources=>Array.isArray(sources)&&sources.some(x=>broken(sourceText(x)))};
 })(globalThis);
