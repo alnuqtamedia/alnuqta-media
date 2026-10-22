@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import '../public/newsroom-permissions.js';
+const P=globalThis.NEWSROOM_ACCESS,uid='own-user',other='another-user';
+const own={author_id:uid,writer_id:null},assigned={author_id:other,writer_id:uid},foreign={author_id:other,writer_id:other,editor_id:uid,writer_name:'رحمة علي'};
+const profile={role:'editor',own_article_publisher:true};
+for(const a of [own,assigned])for(const op of ['edit','publish','remove'])assert(P[op](profile,uid,a));
+for(const op of ['edit','publish','remove'])assert(!P[op](profile,uid,foreign),'Scoped editor affected a foreign article: '+op);
+assert(!P.owns(foreign,uid),'A byline or editor assignment must not imply ownership');
+assert(P.status(profile,'published'));assert(!P.status({role:'editor'},'published'));
+assert(P.edit({role:'editor'},uid,foreign));assert(!P.publish({role:'editor'},uid,own));assert(!P.remove({role:'writer'},uid,own));
+assert(P.publish({role:'owner'},uid,foreign));assert(P.remove({role:'owner'},uid,foreign));
+assert(!P.scoped({role:'owner',own_article_publisher:true}));assert(!P.scoped({role:'editor',own_article_publisher:'true'}));
+assert(!P.owns({},null));assert(!P.edit(null,uid,own));
+console.log('Own-account controls: creator/writer ownership, foreign/byline/editor assignment denied; unflagged roles preserved.');

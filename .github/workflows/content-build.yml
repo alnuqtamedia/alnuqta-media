@@ -33,6 +33,21 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  newsroom-permissions-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Install pinned browser runner
+        run: npm install --no-save --package-lock=false --ignore-scripts playwright@1.56.1
+      - run: npx playwright install --with-deps chromium-headless-shell
+      - name: Verify scoped newsroom controls without production writes
+        run: node scripts/test-newsroom-browser.mjs
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 5
