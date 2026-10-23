@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import vm from 'node:vm';
 import assert from 'node:assert/strict';
 import {renderArticle} from './build-article-pages.mjs';
 const template=fs.readFileSync('newsroom.html','utf8');
@@ -23,3 +24,20 @@ console.log('PASS: published-only pages, escaped metadata, static content, canon
 for(const [category,theme] of [['politics','politics'],['economy','economy'],['economy-public-money','economy'],['sports','sports'],['iraq','iraq'],['world','world'],['arts','arts'],['misc','misc'],['culture-arts','arts'],['unknown','misc']])assert.match(renderArticle(template,{...p,category}),new RegExp('<body data-reader-theme="'+theme+'">'));
 
 assert.match(renderArticle(template,{...p,section:"opinion",category:"economy"}),/<body data-reader-theme="opinion">/);
+
+// History navigation into /articles/ must not move public navigation into that folder.
+assert.match(template,/<base href="\/">/);
+assert.equal((html.match(/<base\b/g)||[]).length,1);
+const base=html.match(/<base href="([^"]+)"/)[1];
+for(const page of ['https://alnuqtamedia.com/newsroom.html','https://alnuqtamedia.com/articles/test-id.html']){
+ const effectiveBase=new URL('/',page);
+ assert.equal(new URL('newsroom.html?type=opinion',effectiveBase).href,'https://alnuqtamedia.com/newsroom.html?type=opinion');
+ assert.equal(new URL('newsroom.html?type=opinion',base).pathname,'/newsroom.html');
+}
+const missing=fs.readFileSync('404.html','utf8');
+for(const target of ['/index.html','/newsroom.html'])assert.ok(missing.includes('href="'+target+'"'));
+
+const links={window:{ALNUQTA_ARTICLE_PAGES:['test-id']},document:{baseURI:'https://alnuqtamedia.com/articles/current.html'},URL};
+vm.runInNewContext(fs.readFileSync('public/article-links.js','utf8'),links);
+assert.equal(links.window.articlePublicUrl({id:'test-id'},'en'),'https://alnuqtamedia.com/articles/test-id.html?lang=en');
+assert.equal(links.window.articlePublicUrl({id:'fallback'}),'https://alnuqtamedia.com/newsroom.html?slug=fallback');
