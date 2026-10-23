@@ -29,7 +29,7 @@
     const status=document.getElementById('status'),box=document.getElementById('documents');
 
     async function loadDocuments(){
-      if(!config.url||!config.anonKey){status.textContent='تعذر تحميل الوثائق: إعداد الاتصال غير متوفر.';return;}
+      if(!config.url||!config.anonKey){status.textContent='تعذر تحميل الوثائق حالياً. حاول مرة أخرى لاحقاً.';return;}
       const client=supabase.createClient(config.url,config.anonKey);
       const {data,error}=await client.from('articles').select('id,title,documents,published_at,updated_at').eq('status','published').order('published_at',{ascending:false,nullsFirst:false});
       if(error){status.textContent='تعذر تحميل الوثائق حالياً.';return;}
