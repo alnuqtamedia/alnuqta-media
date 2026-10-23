@@ -1,16 +1,30 @@
 /* Full-page section illustrations, drawn for Alnuqta in its ink/red palette. */
-body[data-reader-theme="politics"],body[data-reader-theme="economy"]{background-color:#eef1f4;background-attachment:fixed;background-size:clamp(180px,18vw,290px) auto;background-repeat:repeat-y;background-position:left 78px,right 490px;}
+body:where([data-reader-theme]:not([data-reader-theme=""])){background-color:#eef1f4;background-attachment:fixed;background-size:clamp(180px,18vw,290px) auto;background-repeat:repeat-y;background-position:left 78px,right 490px;}
 body[data-reader-theme="politics"]{background-image:url('../assets/reader-themes/politics.svg'),url('../assets/reader-themes/politics.svg');}
 body[data-reader-theme="economy"]{background-color:#edf2f0;background-image:url('../assets/reader-themes/economy.svg'),url('../assets/reader-themes/economy.svg');}
-body:is([data-reader-theme="politics"],[data-reader-theme="economy"]) #reader{position:relative;isolation:isolate;}
-body[data-reader-theme="politics"] #article,body[data-reader-theme="economy"] #article{background:#fff;border:1px solid #e2e8f0;border-radius:1.5rem;padding:clamp(1rem,3vw,2.5rem);box-shadow:0 12px 42px rgba(15,23,42,.045);}
-body[data-reader-theme="politics"] .reader-hero,body[data-reader-theme="economy"] .reader-hero{position:relative;overflow:hidden;isolation:isolate;border-top:3px solid #b91c1c;}
+body:where([data-reader-theme]:not([data-reader-theme=""])) #reader{position:relative;isolation:isolate;}
+body:where([data-reader-theme]:not([data-reader-theme=""])) #article{background:#fff;border:1px solid #e2e8f0;border-radius:1.5rem;padding:clamp(1rem,3vw,2.5rem);box-shadow:0 12px 42px rgba(15,23,42,.045);}
+body:where([data-reader-theme]:not([data-reader-theme=""])) .reader-hero{position:relative;overflow:hidden;isolation:isolate;border-top:3px solid #b91c1c;}
 body[data-reader-theme="politics"] .reader-hero{background:linear-gradient(125deg,#0f172a,#24334a);}
 body[data-reader-theme="economy"] .reader-hero{background:linear-gradient(125deg,#0f172a,#244b45);}
-body[data-reader-theme="politics"] .reader-hero::before,body[data-reader-theme="economy"] .reader-hero::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.09;background-position:left center;background-repeat:no-repeat;background-size:auto 100%;}
+body:where([data-reader-theme]:not([data-reader-theme=""])) .reader-hero::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;opacity:.09;background-position:left center;background-repeat:no-repeat;background-size:auto 100%;}
 /* Abstract institutional architecture; no party or state imagery. */
 body[data-reader-theme="politics"] .reader-hero::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='400' viewBox='0 0 500 400'%3E%3Cg fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M30 330h390M50 310h350M70 150h310L225 70zM95 170v120m65-120v120m65-120v120m65-120v120m65-120v120'/%3E%3C/g%3E%3C/svg%3E");}
 /* Decorative data lines, never presented as factual figures. */
 body[data-reader-theme="economy"] .reader-hero::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='400' viewBox='0 0 500 400'%3E%3Cg fill='none' stroke='white' stroke-width='2'%3E%3Cpath d='M30 80h390M30 160h390M30 240h390M30 320h390M70 40v320m80-320v320m80-320v320m80-320v320m80-320v320'/%3E%3Cpath stroke-width='5' d='m30 300 70-55 70 15 80-100 65 30 90-120'/%3E%3C/g%3E%3C/svg%3E");}
-@media(max-width:640px){body:is([data-reader-theme="politics"],[data-reader-theme="economy"]){background-size:160px auto;background-position:-55px 85px,calc(100% + 55px) 390px;}body[data-reader-theme="politics"] #article,body[data-reader-theme="economy"] #article{border-radius:1rem;}body:is([data-reader-theme="politics"],[data-reader-theme="economy"]) .reader-hero::before{opacity:.055;background-position:25% center;}body:is([data-reader-theme="politics"],[data-reader-theme="economy"]) .reader-hero h1{font-size:1.8rem;line-height:1.6;}}
-@media print{body:is([data-reader-theme="politics"],[data-reader-theme="economy"]){background:#fff!important;}body:is([data-reader-theme="politics"],[data-reader-theme="economy"]) #article{box-shadow:none!important;border:0!important;}body:is([data-reader-theme="politics"],[data-reader-theme="economy"]) .reader-hero::before{display:none;}}
+
+/* Section-specific illustrations retain the common ink and red identity. */
+body[data-reader-theme="world"]{background-color:#eef1f5;background-image:url('../assets/reader-themes/world.svg'),url('../assets/reader-themes/world.svg');}
+body[data-reader-theme="world"] .reader-hero{background:linear-gradient(125deg,#0f172a,#24364f);}
+body[data-reader-theme="iraq"]{background-color:#f3f0eb;background-image:url('../assets/reader-themes/iraq.svg'),url('../assets/reader-themes/iraq.svg');}
+body[data-reader-theme="iraq"] .reader-hero{background:linear-gradient(125deg,#0f172a,#423a35);}
+body[data-reader-theme="sports"]{background-color:#edf2f0;background-image:url('../assets/reader-themes/sports.svg'),url('../assets/reader-themes/sports.svg');}
+body[data-reader-theme="sports"] .reader-hero{background:linear-gradient(125deg,#0f172a,#24473e);}
+body[data-reader-theme="arts"]{background-color:#f1eef3;background-image:url('../assets/reader-themes/arts.svg'),url('../assets/reader-themes/arts.svg');}
+body[data-reader-theme="arts"] .reader-hero{background:linear-gradient(125deg,#0f172a,#3c3047);}
+body[data-reader-theme="misc"]{background-color:#edf2f3;background-image:url('../assets/reader-themes/misc.svg'),url('../assets/reader-themes/misc.svg');}
+body[data-reader-theme="misc"] .reader-hero{background:linear-gradient(125deg,#0f172a,#28434a);}
+body[data-reader-theme="opinion"]{background-color:#f4f1eb;background-image:url('../assets/reader-themes/opinion.svg'),url('../assets/reader-themes/opinion.svg');}
+body[data-reader-theme="opinion"] .reader-hero{background:linear-gradient(125deg,#0f172a,#403b35);}
+@media(max-width:640px){body:where([data-reader-theme]:not([data-reader-theme=""])){background-size:160px auto;background-position:-55px 85px,calc(100% + 55px) 390px;}body:where([data-reader-theme]:not([data-reader-theme=""])) #article{border-radius:1rem;}body:where([data-reader-theme]:not([data-reader-theme=""])) .reader-hero::before{opacity:.055;background-position:25% center;}body:where([data-reader-theme]:not([data-reader-theme=""])) .reader-hero h1{font-size:1.8rem;line-height:1.6;}}
+@media print{body:where([data-reader-theme]:not([data-reader-theme=""])){background:#fff!important;}body:where([data-reader-theme]:not([data-reader-theme=""])) #article{box-shadow:none!important;border:0!important;}body:where([data-reader-theme]:not([data-reader-theme=""])) .reader-hero::before{display:none;}}

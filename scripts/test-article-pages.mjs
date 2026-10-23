@@ -20,4 +20,6 @@ assert.throws(()=>renderArticle(template,{...p,status:'draft'}));
 assert.throws(()=>renderArticle(template,{...p,id:'../private'}));
 console.log('PASS: published-only pages, escaped metadata, static content, canonical image and URL, internal credits hidden, required license attribution escaped, editorial captions preserved.');
 
-for(const [category,theme] of [['politics','politics'],['economy','economy'],['economy-public-money','economy'],['sports','']])assert.match(renderArticle(template,{...p,category}),new RegExp('<body data-reader-theme="'+theme+'">'));
+for(const [category,theme] of [['politics','politics'],['economy','economy'],['economy-public-money','economy'],['sports','sports'],['iraq','iraq'],['world','world'],['arts','arts'],['misc','misc'],['culture-arts','arts'],['unknown','misc']])assert.match(renderArticle(template,{...p,category}),new RegExp('<body data-reader-theme="'+theme+'">'));
+
+assert.match(renderArticle(template,{...p,section:"opinion",category:"economy"}),/<body data-reader-theme="opinion">/);
