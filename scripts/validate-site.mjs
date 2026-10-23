@@ -66,7 +66,7 @@ if (!editorialPolicy.includes("حق الرد") || !editorialPolicy.includes("ا�
 if (!corrections.includes("طلب تصحيح") || !contact.includes("alnuqtamedia@gmail.com")) {
   throw new Error("Corrections and public contact routes are incomplete.");
 }
-if (!notFound.includes("الصفحة غير موجودة") || !notFound.includes('href="newsroom.html"')) {
+if (!notFound.includes("الصفحة غير موجودة") || !notFound.includes('href="/newsroom.html"')) {
   throw new Error("The branded 404 recovery page is incomplete.");
 }
 const publicHtmlFiles = fs.readdirSync(root).filter(file => file.endsWith(".html"));
