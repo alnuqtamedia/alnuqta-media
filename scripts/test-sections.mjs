@@ -26,3 +26,8 @@ vm.runInNewContext(inline,ctx);vm.runInNewContext(`posts=[{slug:'one',title:'Opi
 assert.equal(node('section').value,'opinion');assert.ok(node('grid').innerHTML.includes('Opinion'));assert.ok(!node('grid').innerHTML.includes('Report'));
 for(const file of fs.readdirSync('.').filter(f=>f.endsWith('.html'))){const s=fs.readFileSync(file,'utf8');if(!s.includes('<header'))continue;assert.ok(s.includes('site-header.js'),file);assert.ok(s.includes('type=opinion'),file);assert.ok(!/newsroom-menu|newsroom-dropdown/.test(s),file);}
 console.log('Section checks passed: legacy aliases, combined filters, empty/failure feed, one request, hero deduplication, escaped content, shared navigation.');
+
+assert.equal(vm.runInNewContext("cardExcerpt({title:'عنوان الخبر',excerpt:'عنوان الخبر.'})",ctx),'');
+assert.equal(vm.runInNewContext("cardExcerpt({title:'عنوان',excerpt:'ملخص مفيد'})",ctx),'ملخص مفيد');
+assert.equal(vm.runInNewContext("photoCaption({cover_image_credit:'Internal source'})",ctx),'');
+assert.match(vm.runInNewContext("photoCaption({cover_image_credit:'Author CC BY 4.0'})",ctx),/<details>/);

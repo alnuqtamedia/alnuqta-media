@@ -26,5 +26,5 @@ const rendered=reader.listBlock('Sources',original);
 assert.match(rendered,/href="https:\/\/example.com\/report\?a=1&amp;b=2"/);
 assert.match(rendered,/مصدر أصلي/);
 assert.doesNotMatch(reader.listBlock('Sources',[{title:'unsafe',url:'javascript:alert(1)'}]),/href=/);
-assert.ok(html.includes("typeof source==='string'?educationLabel(p,source):source"),'translation labels must not stringify structured sources');
+assert.ok(!html.includes("listBlock('المصادر',"),'internal sources must not be rendered publicly');
 console.log('PASS: structured sources survive editing with metadata and URLs intact; corrupt placeholders and unsafe source URLs are rejected.');

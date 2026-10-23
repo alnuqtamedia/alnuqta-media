@@ -32,7 +32,7 @@
     'أوافق على استلام نشرة النقطة ويمكنني إلغاء الاشتراك لاحقاً.':'I agree to receive the Alnuqta newsletter. I can unsubscribe at any time.',
     'جميع الحقوق محفوظة © 2026':'All rights reserved © 2026',
     '© النقطة — منصة إعلامية استقصائية مستقلة.':'© Alnuqta — an independent investigative media platform.',
-    'المواد المنشورة':'Published articles','تُعرض هنا المواد التي وصلت إلى حالة النشر من نظام المحتوى.':'Articles published by our editorial team appear here.',
+    'الأخبار والتقارير':'News and reports','جاري تحميل الأخبار...':'Loading news...','المواد المنشورة':'Published articles','تُعرض هنا المواد التي وصلت إلى حالة النشر من نظام المحتوى.':'Articles published by our editorial team appear here.',
     'كل الأقسام':'All sections','كل الأنواع الصحفية':'All article types','تحقيق استقصائي':'Investigation',
     'تقرير':'Report','خبر':'News','تحليل':'Analysis','مقابلة':'Interview','قصة إنسانية':'Human story',
     'فيديو':'Video','الفيديو':'Video','معرض صور':'Photo gallery','معرض الصور':'Photo gallery',
