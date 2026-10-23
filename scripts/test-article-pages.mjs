@@ -19,3 +19,5 @@ assert.doesNotMatch(renderArticle(template,{...p,cover_image_credit:null}),/<fig
 assert.throws(()=>renderArticle(template,{...p,status:'draft'}));
 assert.throws(()=>renderArticle(template,{...p,id:'../private'}));
 console.log('PASS: published-only pages, escaped metadata, static content, canonical image and URL, internal credits hidden, required license attribution escaped, editorial captions preserved.');
+
+for(const [category,theme] of [['politics','politics'],['economy','economy'],['economy-public-money','economy'],['sports','']])assert.match(renderArticle(template,{...p,category}),new RegExp('<body data-reader-theme="'+theme+'">'));
