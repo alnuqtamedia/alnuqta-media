@@ -1,4 +1,6 @@
 // Preview-only: the normal site does not load this module.
+import {readingTracks} from './reading-music-catalog.mjs';
+import {SeamlessMusic} from './reading-music-engine.mjs';
 export const startMusicByDefault=storedChoice=>storedChoice!=='false';
 export class ReadingMusic {
  constructor(audio, render=()=>{}) { this.audio=audio;this.render=render;this.enabled=false;this.blockers=new Set();this.needsGesture=false;this.failed=false;this.version=0; }
@@ -18,14 +20,17 @@ if(typeof document!=='undefined'){
  const audio=document.getElementById('reading-music'),button=document.getElementById('music-toggle'),state=document.getElementById('music-state'),volume=document.getElementById('music-volume'),frame=document.getElementById('reading-page');
  const read=(key)=>{try{return localStorage.getItem(key);}catch{return null;}};
  const save=(key,v)=>{try{localStorage.setItem(key,v);}catch{ /* private mode */ }};
- const controller=new ReadingMusic(audio,c=>{
+ const engine=new SeamlessMusic(readingTracks[0]);
+ const controller=new ReadingMusic(engine,c=>{
   button.textContent=c.enabled?'إيقاف الموسيقى':'تشغيل الموسيقى';
   button.setAttribute('aria-pressed',String(c.enabled));
-  state.textContent=c.failed?'تعذّر تحميل الموسيقى؛ حاول تشغيلها مجدداً':!c.enabled?'الموسيقى متوقفة':c.blockers.size?'متوقفة مؤقتاً أثناء الفيديو':c.needsGesture?'المتصفح منع الصوت؛ يبدأ مع أول تفاعل':'الموسيقى تعمل بصوت منخفض';
+  state.textContent=c.failed?'تعذّر تحميل الموسيقى؛ حاول تشغيلها مجدداً':!c.enabled?'الموسيقى متوقفة':c.blockers.size?'متوقفة مؤقتاً أثناء الفيديو':c.needsGesture?'المتصفح منع الصوت؛ يبدأ مع أول تفاعل':engine.paused?'جارٍ تجهيز الموسيقى':'الموسيقى تعمل بصوت منخفض';
+  document.querySelector('.music-player').classList.toggle('needs-interaction',c.needsGesture);
  });
+ engine.onChange=()=>controller.render(controller);
  const stored=Number(read('alnuqta-music-trial-volume')??8);
  volume.value=String(Number.isFinite(stored)?Math.max(0,Math.min(30,stored)):8);
- function setVolume(){audio.volume=Number(volume.value)/100;document.getElementById('volume-value').textContent=volume.value+'%';save('alnuqta-music-trial-volume',volume.value);}
+ function setVolume(){engine.volume=Number(volume.value)/100;document.getElementById('volume-value').textContent=volume.value+'%';save('alnuqta-music-trial-volume',volume.value);}
  setVolume();button.addEventListener('click',()=>{controller.toggle();save('alnuqta-music-trial-enabled',String(controller.enabled));});
  volume.addEventListener('input',setVolume);
  audio.addEventListener('error',()=>{controller.failed=true;controller.render(controller);});
@@ -39,6 +44,14 @@ if(typeof document!=='undefined'){
   controller.sync();
  };
  for(const name of ['pointerdown','keydown'])document.addEventListener(name,unlock,true);
+ const seek=document.getElementById('music-seek'),elapsed=document.getElementById('music-elapsed');
+ function progress(){seek.max=String(engine.duration||1);if(document.activeElement!==seek)seek.value=String(engine.currentTime||0);const t=Math.floor(engine.currentTime||0);elapsed.textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');elapsed.dataset.playing=String(!engine.paused);}
+ setInterval(progress,500);progress();
+ seek.addEventListener('change',()=>{engine.seek(seek.value).catch(()=>{controller.failed=true;controller.render(controller);});});
+ const trackSelect=document.getElementById('music-track');
+ for(const track of readingTracks){const option=document.createElement('option');option.value=track.id;option.textContent=track.title;trackSelect.append(option);}
+ document.getElementById('track-choice').hidden=readingTracks.length<2;
+ trackSelect.addEventListener('change',async()=>{const track=readingTracks.find(t=>t.id===trackSelect.value);if(!track)return;await engine.setTrack(track);document.getElementById('track-credit').textContent=track.title+' — '+track.artist;document.getElementById('track-source').href=track.source;controller.sync();});
 
  function watchNative(doc,keys){
   const handle=e=>{if(e.target===audio||!['VIDEO','AUDIO'].includes(e.target.tagName))return;keys.add(e.target);controller.block(e.target,e.type==='play'||e.type==='playing');};
