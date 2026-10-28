@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+ <base href="/">
+ <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="robots" content="noindex,nofollow">
+ <title>تجربة موسيقى القراءة | النقطة ميديا</title>
+ <link rel="stylesheet" href="public/reading-music-preview.css">
+ <script type="module" src="public/reading-music-preview.mjs"></script>
+</head>
+<body>
+ <header class="trial-bar">
+  <div><strong>النقطة <span>Media</span></strong><small>تجربة موسيقى القراءة</small></div>
+  <nav aria-label="تصفح التجربة">
+   <button type="button" data-page="/index.html">الرئيسية</button>
+   <button type="button" data-page="/newsroom.html">الأخبار والتقارير</button>
+   <button type="button" id="show-check" aria-expanded="false" aria-controls="check-panel">اختبار الفيديو</button>
+   <a href="index.html" id="exit-trial">الخروج من التجربة</a>
+  </nav>
+ </header>
+ <main><iframe id="reading-page" title="موقع النقطة — تصفح مع موسيقى القراءة" src="newsroom.html" allow="autoplay; fullscreen" allowfullscreen></iframe></main>
+ <section class="music-player" aria-label="موسيقى القراءة">
+  <div class="music-title">موسيقى القراءة <span id="music-state" role="status" aria-live="polite">جارٍ تشغيل الموسيقى</span></div>
+  <button type="button" id="music-toggle" aria-pressed="true">إيقاف الموسيقى</button>
+  <label class="volume-label" for="music-volume">الصوت <input id="music-volume" type="range" min="0" max="30" value="8" step="1"><output id="volume-value" for="music-volume">8%</output></label>
+  <details><summary>عن الموسيقى</summary><p>Mediterranean song — Forgotten-Hero-Records</p><p>المقطوعة متاحة وفق <a href="https://pixabay.com/music/folk-mediterranean-song-420197/" target="_blank" rel="noopener noreferrer">ترخيص Pixabay</a>.</p></details>
+ </section>
+ <aside id="check-panel" hidden>
+  <h2>اختبار توقف الموسيقى</h2>
+  <p>شغّل الموسيقى، ثم هذا المقطع. تتوقف الموسيقى أثناء الفيديو وتعود بعد إيقافه أو انتهائه.</p>
+  <video id="check-video" controls playsinline preload="none" aria-label="مقطع اختبار مدته ست ثوان" src="assets/music-trial/check.mp4"></video>
+  <button type="button" id="close-check">إغلاق الاختبار</button>
+ </aside>
+ <audio id="reading-music" loop preload="none" src="assets/music-trial/mediterranean-song.mp3"></audio>
+</body>
+</html>
