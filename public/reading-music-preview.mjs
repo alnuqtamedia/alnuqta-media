@@ -20,6 +20,9 @@ if(typeof document!=='undefined'){
  const audio=document.getElementById('reading-music'),button=document.getElementById('music-toggle'),state=document.getElementById('music-state'),volume=document.getElementById('music-volume'),frame=document.getElementById('reading-page');
  const read=(key)=>{try{return localStorage.getItem(key);}catch{return null;}};
  const save=(key,v)=>{try{localStorage.setItem(key,v);}catch{ /* private mode */ }};
+ // A manual stop applies to this tab's visit, not all future visits.
+ const readEnabled=()=>{try{return sessionStorage.getItem('alnuqta-reading-music-enabled');}catch{return null;}};
+ const saveEnabled=value=>{try{sessionStorage.setItem('alnuqta-reading-music-enabled',String(value));}catch{}};
  const engine=new SeamlessMusic(readingTracks[0]);
  const controller=new ReadingMusic(engine,c=>{
   button.textContent=c.enabled?'إيقاف الموسيقى':'تشغيل الموسيقى';
@@ -31,11 +34,11 @@ if(typeof document!=='undefined'){
  const stored=Number(read('alnuqta-music-trial-volume')??8);
  volume.value=String(Number.isFinite(stored)?Math.max(0,Math.min(30,stored)):8);
  function setVolume(){engine.volume=Number(volume.value)/100;document.getElementById('volume-value').textContent=volume.value+'%';save('alnuqta-music-trial-volume',volume.value);}
- setVolume();button.addEventListener('click',()=>{controller.toggle();save('alnuqta-music-trial-enabled',String(controller.enabled));});
+ setVolume();button.addEventListener('click',()=>{controller.toggle();saveEnabled(controller.enabled);});
  volume.addEventListener('input',setVolume);
  audio.addEventListener('error',()=>{controller.failed=true;controller.render(controller);});
  audio.addEventListener('playing',()=>{if(!controller.enabled||controller.blockers.size)audio.pause();});
- controller.enabled=startMusicByDefault(read('alnuqta-music-trial-enabled'));
+ controller.enabled=startMusicByDefault(readEnabled());
  controller.sync();
  // A real gesture is required when the browser rejects audible autoplay.
  const unlock=e=>{if(!controller.enabled||controller.failed||controller.blockers.size||!engine.paused)return;

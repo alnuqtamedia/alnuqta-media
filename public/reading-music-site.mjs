@@ -25,7 +25,7 @@ export async function bootSiteMusic(){
  document.body.append(stage);
  // Arm autoplay and gesture listeners before revealing the first page.
  document.body.dataset.readingMusicSite='true';
- const musicReady=import('/public/reading-music-preview.mjs?v=site2');
+ const musicReady=import('/public/reading-music-preview.mjs?v=site3');
  frame.src=start;
  const saved=original.map(el=>({el,hidden:el.hidden,inert:el.inert}));
  const reflect=(mode='replace')=>{
