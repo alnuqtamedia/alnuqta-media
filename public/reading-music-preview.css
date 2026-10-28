@@ -7,5 +7,5 @@
 :root .music-options{position:relative;margin:0}
 :root .music-options>summary{list-style:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:24px;line-height:1;color:#526778}
 :root .music-options>summary::-webkit-details-marker{display:none}
-.options-panel{position:absolute;bottom:48px;left:-5px;width:260px;background:white;border:1px solid #dce3ea;border-radius:12px;padding:15px;box-shadow:0 6px 25px #07172b20;line-height:1.8}
+.options-panel{position:absolute;bottom:48px;right:-5px;left:auto;width:260px;background:white;border:1px solid #dce3ea;border-radius:12px;padding:15px;box-shadow:0 6px 25px #07172b20;line-height:1.8}
 .options-panel strong{font-size:13px;color:#102234}.options-panel p{margin:10px 0 0;overflow-wrap:anywhere}.seek-label{display:block;margin-top:12px}.seek-label output{float:left;direction:ltr}.seek-label input{width:100%;direction:ltr;accent-color:#b6091b}.options-panel select{max-width:100%}
