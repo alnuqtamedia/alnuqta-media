@@ -2,10 +2,10 @@
 :root .music-player{width:auto;max-width:calc(100vw - 20px);display:flex;align-items:center;gap:5px;padding:6px;border-radius:999px;bottom:14px;right:14px;box-shadow:0 3px 18px #07172b20}
 :root #music-toggle{margin:0;width:auto;padding:8px 13px;border-radius:999px;font-size:12px;font-weight:600;min-height:34px}
 :root .music-title{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
-:root .needs-interaction .music-title{clip-path:none;overflow:visible;width:230px;height:auto;right:0;bottom:55px;background:white;border:1px solid #dce3ea;border-radius:10px;padding:10px;box-shadow:0 3px 18px #07172b15}
-:root .needs-interaction .music-title span{margin:0;line-height:1.8}
 :root .music-options{position:relative;margin:0}
 :root .music-options>summary{list-style:none;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;font-size:24px;line-height:1;color:#526778}
 :root .music-options>summary::-webkit-details-marker{display:none}
 .options-panel{position:absolute;bottom:48px;right:-5px;left:auto;width:260px;background:white;border:1px solid #dce3ea;border-radius:12px;padding:15px;box-shadow:0 6px 25px #07172b20;line-height:1.8}
 .options-panel strong{font-size:13px;color:#102234}.options-panel p{margin:10px 0 0;overflow-wrap:anywhere}.seek-label{display:block;margin-top:12px}.seek-label output{float:left;direction:ltr}.seek-label input{width:100%;direction:ltr;accent-color:#b6091b}.options-panel select{max-width:100%}
+
+.options-panel{width:230px;padding:12px}.options-panel .volume-label{margin:0}.options-panel .volume-label input{width:130px}

@@ -38,20 +38,12 @@ if(typeof document!=='undefined'){
  controller.enabled=startMusicByDefault(read('alnuqta-music-trial-enabled'));
  controller.sync();
  // A real gesture is required when the browser rejects audible autoplay.
- const unlock=e=>{if(!controller.enabled||!controller.needsGesture||controller.blockers.size)return;
+ const unlock=e=>{if(!controller.enabled||controller.failed||controller.blockers.size||!engine.paused)return;
   if(e.target.closest?.('#music-toggle,#music-volume,#exit-trial'))return;
   if(e.type==='keydown'&&(e.altKey||e.ctrlKey||e.metaKey||e.key==='Tab'||e.key==='Escape'))return;
   controller.sync();
  };
- for(const name of ['pointerdown','keydown'])document.addEventListener(name,unlock,true);
- const seek=document.getElementById('music-seek'),elapsed=document.getElementById('music-elapsed');
- function progress(){seek.max=String(engine.duration||1);if(document.activeElement!==seek)seek.value=String(engine.currentTime||0);const t=Math.floor(engine.currentTime||0);elapsed.textContent=Math.floor(t/60)+':'+String(t%60).padStart(2,'0');elapsed.dataset.playing=String(!engine.paused);}
- setInterval(progress,500);progress();
- seek.addEventListener('change',()=>{engine.seek(seek.value).catch(()=>{controller.failed=true;controller.render(controller);});});
- const trackSelect=document.getElementById('music-track');
- for(const track of readingTracks){const option=document.createElement('option');option.value=track.id;option.textContent=track.title;trackSelect.append(option);}
- document.getElementById('track-choice').hidden=readingTracks.length<2;
- trackSelect.addEventListener('change',async()=>{const track=readingTracks.find(t=>t.id===trackSelect.value);if(!track)return;await engine.setTrack(track);document.getElementById('track-credit').textContent=track.title+' — '+track.artist;document.getElementById('track-source').href=track.source;controller.sync();});
+ for(const name of ['pointerdown','click','keydown'])document.addEventListener(name,unlock,true);
 
  function watchNative(doc,keys){
   const handle=e=>{if(e.target===audio||!['VIDEO','AUDIO'].includes(e.target.tagName))return;keys.add(e.target);controller.block(e.target,e.type==='play'||e.type==='playing');};
@@ -113,8 +105,8 @@ if(typeof document!=='undefined'){
   try{
    const doc=frame.contentDocument,win=frame.contentWindow;if(!doc?.body)return;
    const unwatch=watchNative(doc,keys);
-   for(const name of ['pointerdown','keydown'])doc.addEventListener(name,unlock,true);
-   nativeCleanup=()=>{unwatch();for(const name of ['pointerdown','keydown'])doc.removeEventListener(name,unlock,true);};
+   for(const name of ['pointerdown','click','keydown'])doc.addEventListener(name,unlock,true);
+   nativeCleanup=()=>{unwatch();for(const name of ['pointerdown','click','keydown'])doc.removeEventListener(name,unlock,true);};
    // Keep internal browsing in the preview frame, including article links.
    doc.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||a.hasAttribute('download'))return;const u=new URL(a.href);if(u.origin!==location.origin)return;
     if(/^\/admin\//.test(u.pathname)||u.pathname==='/experiments/reading-music.html'){e.preventDefault();return;}
