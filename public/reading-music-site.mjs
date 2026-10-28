@@ -3,6 +3,7 @@ export function publicMusicPath(value,origin){
   return u.pathname==='/'||/\.html$/i.test(u.pathname)?u.pathname+u.search+u.hash:null;
  }catch{return null;}
 }
+export function readyMusicDocument(win,origin){try{return !!(publicMusicPath(win.location.href,origin)&&win.document?.body&&win.document.readyState!=='loading');}catch{return false;}}
 
 export async function bootSiteMusic(){
  if(window.top!==window.self||document.getElementById('reading-music-site'))return;
@@ -12,13 +13,14 @@ export async function bootSiteMusic(){
  stage.innerHTML=`<main style="height:100%;min-height:0"><iframe id="reading-page" title="موقع النقطة" style="border:0;width:100%;height:100%;display:block" allow="autoplay; fullscreen" allowfullscreen></iframe></main>
  <section class="music-player" aria-label="موسيقى القراءة"><div class="music-title"><span id="music-state" role="status" aria-live="polite">جارٍ تشغيل الموسيقى</span></div><button type="button" id="music-toggle" aria-pressed="true">إيقاف الموسيقى</button><details class="music-options"><summary aria-label="إعدادات الموسيقى" title="إعدادات الموسيقى">⋯</summary><div class="options-panel"><label class="volume-label" for="music-volume">الصوت <input id="music-volume" type="range" min="0" max="30" value="8" step="1"><output id="volume-value" for="music-volume">8%</output></label></div></details></section>
  <div hidden><button id="show-check"></button><aside id="check-panel" hidden><video id="check-video"></video><button id="close-check"></button></aside><a id="exit-trial" href="/index.html"></a><audio id="reading-music" preload="none"></audio></div>`;
- const frame=stage.querySelector('#reading-page');let active=false,timeout;
+ const frame=stage.querySelector('#reading-page');let active=false,timeout,readyProbe;
  const sheet=document.createElement('link');sheet.rel='stylesheet';sheet.href='/public/reading-music-preview.css?v=5';
  const styles=new Promise((resolve,reject)=>{sheet.onload=resolve;sheet.onerror=reject;});document.head.append(sheet);
  const firstPage=new Promise((resolve,reject)=>{
   timeout=setTimeout(()=>reject(new Error('Page did not load')),15000);
-  const loaded=()=>{try{if(!publicMusicPath(frame.contentWindow.location.href,origin))return;if(!frame.contentDocument?.body)throw new Error('Page unavailable');frame.removeEventListener('load',loaded);resolve();}catch(e){reject(e);}};
+  const loaded=()=>{try{if(!readyMusicDocument(frame.contentWindow,origin))return;clearInterval(readyProbe);frame.removeEventListener('load',loaded);resolve();}catch(e){reject(e);}};
   frame.addEventListener('load',loaded);
+  readyProbe=setInterval(loaded,75);
  });
  document.body.append(stage);frame.src=start;
  const saved=original.map(el=>({el,hidden:el.hidden,inert:el.inert}));
@@ -56,12 +58,12 @@ export async function bootSiteMusic(){
  frame.addEventListener('load',bindRoutes);
  window.addEventListener('popstate',()=>{if(active)navigate(location.href,false);});
  try{
-  await Promise.all([styles,firstPage]);clearTimeout(timeout);document.body.dataset.readingMusicSite='true';active=true;bindRoutes();
+  await Promise.all([styles,firstPage]);clearTimeout(timeout);clearInterval(readyProbe);document.body.dataset.readingMusicSite='true';active=true;bindRoutes();
   for(const {el} of saved){el.hidden=true;el.inert=true;}
   document.body.style.overflow='hidden';stage.style.display='block';frame.focus();
   await import('/public/reading-music-preview.mjs?v=site1');
  }catch{
-  clearTimeout(timeout);active=false;
+  clearTimeout(timeout);clearInterval(readyProbe);active=false;
   const toggle=stage.querySelector('#music-toggle');if(toggle?.getAttribute('aria-pressed')==='true')toggle.click();
   for(const {el,hidden,inert} of saved){el.hidden=hidden;el.inert=inert;}
   document.body.style.overflow=previousOverflow;delete document.body.dataset.readingMusicSite;stage.remove();sheet.remove();

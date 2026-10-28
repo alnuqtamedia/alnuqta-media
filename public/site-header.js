@@ -39,9 +39,9 @@
     const script = document.createElement('script');
     script.id = 'reading-music-site-loader';
     script.type = 'module';
-    script.src = '/public/reading-music-site.mjs?v=2';
+    script.src = '/public/reading-music-site.mjs?v=3';
     document.head.append(script);
   };
-  if (document.readyState === 'complete') start();
-  else window.addEventListener('load', start, { once: true });
+  if (document.readyState !== 'loading') start();
+  else window.addEventListener('DOMContentLoaded', start, { once: true });
 })();
