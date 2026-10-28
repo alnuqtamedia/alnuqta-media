@@ -1,5 +1,8 @@
 import assert from 'node:assert/strict';
-import {ReadingMusic} from '../public/reading-music-preview.mjs';
+import {ReadingMusic,startMusicByDefault} from '../public/reading-music-preview.mjs';
+assert.equal(startMusicByDefault(null),true,'New visitor gets an autoplay attempt');
+assert.equal(startMusicByDefault('true'),true);
+assert.equal(startMusicByDefault('false'),false,'Remember an explicit stop');
 const audio={paused:true,plays:0,pause(){this.paused=true;},async play(){this.plays++;this.paused=false;}};
 const c=new ReadingMusic(audio);
 assert.equal(audio.plays,0,'No unsolicited playback');
@@ -12,5 +15,6 @@ await c.toggle();await c.block('old-page',true);await c.clear(new Set(['old-page
 let finish;const delayed={paused:true,pause(){this.paused=true;},play(){this.paused=false;return new Promise(r=>{finish=r;});}};
 const race=new ReadingMusic(delayed);const pending=race.toggle();await race.block('video',true);finish();await pending;assert.equal(delayed.paused,true,'Delayed play cannot override suspension');
 const denied=new ReadingMusic({pause(){},async play(){throw Object.assign(new Error(),{name:'NotAllowedError'});}});await denied.toggle();assert.equal(denied.needsGesture,true,'Autoplay rejection stays recoverable');assert.equal(denied.failed,false);
+await denied.toggle();assert.equal(denied.enabled,false,'Stop works even when the browser blocked autoplay');
 const error=new ReadingMusic({pause(){},async play(){throw Object.assign(new Error(),{name:'NotSupportedError'});}});await error.toggle();assert.equal(error.failed,true,'Unsupported audio is visible');
 console.log('Reading music: opt-in, overlapping media, manual stop, page cleanup, races and autoplay failures passed.');

@@ -1,4 +1,5 @@
 // Preview-only: the normal site does not load this module.
+export const startMusicByDefault=storedChoice=>storedChoice!=='false';
 export class ReadingMusic {
  constructor(audio, render=()=>{}) { this.audio=audio;this.render=render;this.enabled=false;this.blockers=new Set();this.needsGesture=false;this.failed=false;this.version=0; }
  async sync() {
@@ -8,7 +9,7 @@ export class ReadingMusic {
   catch(e){if(version===this.version&&e.name!=='AbortError'){this.needsGesture=e.name==='NotAllowedError';this.failed=!this.needsGesture;}}
   this.render(this);
  }
- toggle(){this.enabled=this.needsGesture?true:!this.enabled;this.failed=false;this.needsGesture=false;return this.sync();}
+ toggle(){this.enabled=!this.enabled;this.failed=false;this.needsGesture=false;return this.sync();}
  block(key,playing){if(playing)this.blockers.add(key);else this.blockers.delete(key);return this.sync();}
  clear(keys){for(const key of keys)this.blockers.delete(key);return this.sync();}
 }
@@ -18,9 +19,9 @@ if(typeof document!=='undefined'){
  const read=(key)=>{try{return localStorage.getItem(key);}catch{return null;}};
  const save=(key,v)=>{try{localStorage.setItem(key,v);}catch{ /* private mode */ }};
  const controller=new ReadingMusic(audio,c=>{
-  button.textContent=c.needsGesture?'اضغط لاستئناف الموسيقى':c.enabled?'إيقاف الموسيقى':'تشغيل الموسيقى';
+  button.textContent=c.enabled?'إيقاف الموسيقى':'تشغيل الموسيقى';
   button.setAttribute('aria-pressed',String(c.enabled));
-  state.textContent=c.failed?'تعذّر تحميل الموسيقى؛ حاول تشغيلها مجدداً':!c.enabled?'الموسيقى متوقفة':c.blockers.size?'متوقفة مؤقتاً أثناء الفيديو':c.needsGesture?'يلزم الضغط لاستئناف التشغيل':'الموسيقى تعمل بصوت منخفض';
+  state.textContent=c.failed?'تعذّر تحميل الموسيقى؛ حاول تشغيلها مجدداً':!c.enabled?'الموسيقى متوقفة':c.blockers.size?'متوقفة مؤقتاً أثناء الفيديو':c.needsGesture?'المتصفح منع الصوت؛ يبدأ مع أول تفاعل':'الموسيقى تعمل بصوت منخفض';
  });
  const stored=Number(read('alnuqta-music-trial-volume')??8);
  volume.value=String(Number.isFinite(stored)?Math.max(0,Math.min(30,stored)):8);
@@ -29,7 +30,15 @@ if(typeof document!=='undefined'){
  volume.addEventListener('input',setVolume);
  audio.addEventListener('error',()=>{controller.failed=true;controller.render(controller);});
  audio.addEventListener('playing',()=>{if(!controller.enabled||controller.blockers.size)audio.pause();});
- if(read('alnuqta-music-trial-enabled')==='true'){controller.enabled=true;controller.sync();}
+ controller.enabled=startMusicByDefault(read('alnuqta-music-trial-enabled'));
+ controller.sync();
+ // A real gesture is required when the browser rejects audible autoplay.
+ const unlock=e=>{if(!controller.enabled||!controller.needsGesture||controller.blockers.size)return;
+  if(e.target.closest?.('#music-toggle,#music-volume,#exit-trial'))return;
+  if(e.type==='keydown'&&(e.altKey||e.ctrlKey||e.metaKey||e.key==='Tab'||e.key==='Escape'))return;
+  controller.sync();
+ };
+ for(const name of ['pointerdown','keydown'])document.addEventListener(name,unlock,true);
 
  function watchNative(doc,keys){
   const handle=e=>{if(e.target===audio||!['VIDEO','AUDIO'].includes(e.target.tagName))return;keys.add(e.target);controller.block(e.target,e.type==='play'||e.type==='playing');};
@@ -90,7 +99,9 @@ if(typeof document!=='undefined'){
   cleanup=()=>{nativeCleanup();providerCleanup();controller.clear(keys);};
   try{
    const doc=frame.contentDocument,win=frame.contentWindow;if(!doc?.body)return;
-   nativeCleanup=watchNative(doc,keys);
+   const unwatch=watchNative(doc,keys);
+   for(const name of ['pointerdown','keydown'])doc.addEventListener(name,unlock,true);
+   nativeCleanup=()=>{unwatch();for(const name of ['pointerdown','keydown'])doc.removeEventListener(name,unlock,true);};
    // Keep internal browsing in the preview frame, including article links.
    doc.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||a.hasAttribute('download'))return;const u=new URL(a.href);if(u.origin!==location.origin)return;
     if(/^\/admin\//.test(u.pathname)||u.pathname==='/experiments/reading-music.html'){e.preventDefault();return;}
