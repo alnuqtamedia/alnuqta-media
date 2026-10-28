@@ -22,7 +22,11 @@ export async function bootSiteMusic(){
   frame.addEventListener('load',loaded);
   readyProbe=setInterval(loaded,75);
  });
- document.body.append(stage);frame.src=start;
+ document.body.append(stage);
+ // Arm autoplay and gesture listeners before revealing the first page.
+ document.body.dataset.readingMusicSite='true';
+ const musicReady=import('/public/reading-music-preview.mjs?v=site2');
+ frame.src=start;
  const saved=original.map(el=>({el,hidden:el.hidden,inert:el.inert}));
  const reflect=(mode='replace')=>{
   if(!active)return;try{
@@ -61,7 +65,7 @@ export async function bootSiteMusic(){
   await Promise.all([styles,firstPage]);clearTimeout(timeout);clearInterval(readyProbe);document.body.dataset.readingMusicSite='true';active=true;bindRoutes();
   for(const {el} of saved){el.hidden=true;el.inert=true;}
   document.body.style.overflow='hidden';stage.style.display='block';frame.focus();
-  await import('/public/reading-music-preview.mjs?v=site1');
+  await musicReady;
  }catch{
   clearTimeout(timeout);clearInterval(readyProbe);active=false;
   const toggle=stage.querySelector('#music-toggle');if(toggle?.getAttribute('aria-pressed')==='true')toggle.click();

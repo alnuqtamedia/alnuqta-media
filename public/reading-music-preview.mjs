@@ -1,4 +1,4 @@
-// Preview-only: the normal site does not load this module.
+// Shared controller for the public-site player and isolated preview.
 import {readingTracks} from './reading-music-catalog.mjs';
 import {SeamlessMusic} from './reading-music-engine.mjs?v=3';
 export const startMusicByDefault=storedChoice=>storedChoice!=='false';
@@ -98,7 +98,7 @@ if(typeof document!=='undefined'){
  let lastDocument;
  async function bindPage(){
   let incoming;try{incoming=frame.contentDocument;}catch{return;}
-  if(!incoming||incoming===lastDocument||incoming.readyState==='loading')return;lastDocument=incoming;
+  if(!incoming?.body||incoming===lastDocument||frame.contentWindow.location.href==='about:blank')return;lastDocument=incoming;
   cleanup();const generation=++pageGeneration;const keys=new Set();let providerCleanup=()=>{};
   let nativeCleanup=()=>{};
   cleanup=()=>{nativeCleanup();providerCleanup();controller.clear(keys);};
@@ -115,7 +115,10 @@ if(typeof document!=='undefined'){
    providerCleanup=await watchProviders(doc,win,keys,generation);if(generation!==pageGeneration)providerCleanup();
   }catch{state.textContent='هذه الصفحة لا تدعم التصفح داخل التجربة';}
  }
+ // Bind as soon as the child document exists: images may delay its load event.
  frame.addEventListener('load',bindPage);
+ const pageProbe=setInterval(bindPage,75);
+ window.addEventListener('pagehide',()=>{clearInterval(pageProbe);cleanup();},{once:true});
  bindPage();
  const selected=document.body.dataset.readingMusicSite?null:safePage(new URLSearchParams(location.search).get('page')||'/newsroom.html');if(selected&&selected!=='/newsroom.html')navigate(selected);
  const panel=document.getElementById('check-panel'),check=document.getElementById('check-video'),show=document.getElementById('show-check');

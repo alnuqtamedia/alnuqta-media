@@ -39,7 +39,7 @@
     const script = document.createElement('script');
     script.id = 'reading-music-site-loader';
     script.type = 'module';
-    script.src = '/public/reading-music-site.mjs?v=3';
+    script.src = '/public/reading-music-site.mjs?v=4';
     document.head.append(script);
   };
   if (document.readyState !== 'loading') start();
