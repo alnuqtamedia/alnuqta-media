@@ -25,4 +25,10 @@ e.pause();assert.equal(e.offset,1.5);assert.equal(sources[0].stopped,true);
 await e.play();assert.equal(sources[1].offset,1.5,'Resume preserves position');
 await e.seek(8);assert.equal(sources[2].offset,8);e.pause();
 await e.setTrack({url:'/another',crossfadeSeconds:2});assert.equal(e.offset,0);assert.equal(e.buffer,null);
+const savedFetch=globalThis.fetch;
+try{
+ globalThis.fetch=async function(){assert.equal(this,globalThis,'Browser fetch must keep its global receiver');return {ok:true,arrayBuffer:async()=>new ArrayBuffer(1)};};
+ const bound=new SeamlessMusic({url:'/bound',crossfadeSeconds:1},{Context});
+ const loading=bound.play();await new Promise(r=>setImmediate(r));resolveDecode(decoded);await loading;assert.equal(bound.paused,false);bound.pause();
+}finally{globalThis.fetch=savedFetch;}
 console.log('Seamless music: sample-continuous join, preserved opening, audio-clock looping, decode cancellation, pause/resume, seek and track reset passed.');

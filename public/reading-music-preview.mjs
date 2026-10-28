@@ -1,6 +1,6 @@
 // Preview-only: the normal site does not load this module.
 import {readingTracks} from './reading-music-catalog.mjs';
-import {SeamlessMusic} from './reading-music-engine.mjs';
+import {SeamlessMusic} from './reading-music-engine.mjs?v=3';
 export const startMusicByDefault=storedChoice=>storedChoice!=='false';
 export class ReadingMusic {
  constructor(audio, render=()=>{}) { this.audio=audio;this.render=render;this.enabled=false;this.blockers=new Set();this.needsGesture=false;this.failed=false;this.version=0; }
