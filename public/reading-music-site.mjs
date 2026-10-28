@@ -17,7 +17,8 @@ export async function bootSiteMusic(){
  const styles=new Promise((resolve,reject)=>{sheet.onload=resolve;sheet.onerror=reject;});document.head.append(sheet);
  const firstPage=new Promise((resolve,reject)=>{
   timeout=setTimeout(()=>reject(new Error('Page did not load')),15000);
-  frame.addEventListener('load',()=>{try{if(!frame.contentDocument?.body)throw new Error('Page unavailable');resolve();}catch(e){reject(e);}}, {once:true});
+  const loaded=()=>{try{if(!publicMusicPath(frame.contentWindow.location.href,origin))return;if(!frame.contentDocument?.body)throw new Error('Page unavailable');frame.removeEventListener('load',loaded);resolve();}catch(e){reject(e);}};
+  frame.addEventListener('load',loaded);
  });
  document.body.append(stage);frame.src=start;
  const saved=original.map(el=>({el,hidden:el.hidden,inert:el.inert}));
@@ -57,7 +58,7 @@ export async function bootSiteMusic(){
  try{
   await Promise.all([styles,firstPage]);clearTimeout(timeout);document.body.dataset.readingMusicSite='true';active=true;bindRoutes();
   for(const {el} of saved){el.hidden=true;el.inert=true;}
-  document.body.style.overflow='hidden';stage.style.display='block';
+  document.body.style.overflow='hidden';stage.style.display='block';frame.focus();
   await import('/public/reading-music-preview.mjs?v=site1');
  }catch{
   clearTimeout(timeout);active=false;

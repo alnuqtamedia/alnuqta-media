@@ -29,3 +29,19 @@
     window.buildSectionsMenu();
   });
 })();
+
+// Keep one music engine alive while public pages are browsed.
+(() => {
+  if (typeof window.addEventListener !== 'function' || window.top !== window.self) return;
+  if (/^\/(?:admin|experiments)(?:\/|$)/.test(location.pathname)) return;
+  const start = () => {
+    if (document.getElementById('reading-music-site-loader')) return;
+    const script = document.createElement('script');
+    script.id = 'reading-music-site-loader';
+    script.type = 'module';
+    script.src = '/public/reading-music-site.mjs?v=2';
+    document.head.append(script);
+  };
+  if (document.readyState === 'complete') start();
+  else window.addEventListener('load', start, { once: true });
+})();
