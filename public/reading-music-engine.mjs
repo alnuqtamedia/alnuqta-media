@@ -12,7 +12,7 @@ export class SeamlessMusic {
   this.track=track;this.context=null;this.gain=null;this.buffer=null;this.loading=null;
   this.source=null;this.offset=0;this.startedAt=0;this._volume=.08;this.revision=0;this.trackGeneration=0;
   this.Context=options.Context||globalThis.AudioContext||globalThis.webkitAudioContext;
-  this.fetch=options.fetch||globalThis.fetch;this.paused=true;this.onChange=()=>{};
+  this.fetch=options.fetch||((...args)=>globalThis.fetch(...args));this.paused=true;this.onChange=()=>{};
  }
  get duration(){return this.buffer?.duration||0;}
  get currentTime(){
