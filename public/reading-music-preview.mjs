@@ -108,7 +108,7 @@ if(typeof document!=='undefined'){
    for(const name of ['pointerdown','click','keydown'])doc.addEventListener(name,unlock,true);
    nativeCleanup=()=>{unwatch();for(const name of ['pointerdown','click','keydown'])doc.removeEventListener(name,unlock,true);};
    // Keep internal browsing in the preview frame, including article links.
-   doc.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||a.hasAttribute('download'))return;const u=new URL(a.href);if(u.origin!==location.origin)return;
+   if(!document.body.dataset.readingMusicSite)doc.addEventListener('click',e=>{const a=e.target.closest?.('a[href]');if(!a||e.button!==0||e.ctrlKey||e.metaKey||e.shiftKey||a.hasAttribute('download'))return;const u=new URL(a.href);if(u.origin!==location.origin)return;
     if(/^\/admin\//.test(u.pathname)||u.pathname==='/experiments/reading-music.html'){e.preventDefault();return;}
     if(a.target==='_blank'&&safePage(u.href)){e.preventDefault();win.location.href=u.href;}
    },true);
@@ -117,7 +117,7 @@ if(typeof document!=='undefined'){
  }
  frame.addEventListener('load',bindPage);
  bindPage();
- const selected=safePage(new URLSearchParams(location.search).get('page')||'/newsroom.html');if(selected&&selected!=='/newsroom.html')navigate(selected);
+ const selected=document.body.dataset.readingMusicSite?null:safePage(new URLSearchParams(location.search).get('page')||'/newsroom.html');if(selected&&selected!=='/newsroom.html')navigate(selected);
  const panel=document.getElementById('check-panel'),check=document.getElementById('check-video'),show=document.getElementById('show-check');
  show.addEventListener('click',()=>{panel.hidden=!panel.hidden;show.setAttribute('aria-expanded',String(!panel.hidden));if(panel.hidden)check.pause();});
  document.getElementById('close-check').addEventListener('click',()=>{check.pause();panel.hidden=true;show.setAttribute('aria-expanded','false');show.focus();});
